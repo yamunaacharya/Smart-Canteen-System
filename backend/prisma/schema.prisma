@@ -1,0 +1,113 @@
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+/* ENUMS */
+
+enum UserRole {
+  ADMIN
+  CUSTOMER
+}
+
+enum FoodStatus {
+  AVAILABLE
+  UNAVAILABLE
+  OUT_OF_STOCK
+  DISCONTINUED
+}
+
+enum OrderStatus {
+  INCART
+  PROCESSING
+  COMPLETED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  CANCELLED
+  FAILED
+}
+
+enum PaymentMethod {
+  COD
+  KHALTI
+}
+
+/*   USER */
+
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  password  String
+  role      UserRole @default(CUSTOMER)
+  createdAt DateTime @default(now())
+
+  orders    Order[]
+}
+
+/*   FOOD ITEMS */
+
+model FoodItem {
+  id        Int        @id @default(autoincrement())
+  name      String
+  price     Float
+  qty       Int
+  a_status  FoodStatus @default(AVAILABLE)
+  image     String?
+
+  orderItems OrderItem[]
+
+  createdAt DateTime @default(now())
+}
+
+/* ORDER */
+
+model Order {
+  id         Int         @id @default(autoincrement())
+  orderDate  DateTime    @default(now())
+  totalAmt   Float
+  status     OrderStatus @default(INCART)
+
+  // relationship: customer (User)
+  customerId Int
+  customer   User        @relation(fields: [customerId], references: [id])
+
+  orderItems OrderItem[]
+  payments   Payment[]
+}
+
+/* ORDER ITEMS */
+
+model OrderItem {
+  id      Int    @id @default(autoincrement())
+  qty     Int
+  price   Float
+
+  // relation to Order
+  orderId Int
+  order   Order @relation(fields: [orderId], references: [id])
+
+  // relation to FoodItem
+  foodId  Int
+  food    FoodItem @relation(fields: [foodId], references: [id])
+}
+
+/* PAYMENTS */
+
+model Payment {
+  id        Int            @id @default(autoincrement())
+  method    PaymentMethod  @default(COD)
+  status    PaymentStatus  @default(PENDING)
+  payDate   DateTime       @default(now())
+
+  orderId Int
+  order   Order @relation(fields: [orderId], references: [id])
+}

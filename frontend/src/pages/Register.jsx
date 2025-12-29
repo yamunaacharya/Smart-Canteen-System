@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { useAuth } from '../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -8,6 +10,10 @@ export default function RegisterPage() {
     confirmPassword: '',
     role: 'customer'
   });
+  const [error, setError] = useState(null);
+
+  const { register, loading } = useAuth();
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -17,16 +23,31 @@ export default function RegisterPage() {
     }));
   };
 
-  const handleSubmit = () => {
-    console.log('Form submitted:', formData);
-    alert('Signup successful!');
-    setFormData({
-      name: '',
-      email: '',
-      password: '',
-      confirmPassword: '',
-      role: 'customer'
-    });
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError(null);
+
+    const { name, email, password, confirmPassword, role } = formData;
+
+    if (!name || !email || !password) {
+      setError('Name, email and password are required');
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+
+    try {
+      await register({ name, email, password, role });
+      // Optionally reset form
+      setFormData({ name: '', email: '', password: '', confirmPassword: '', role: 'customer' });
+      // Redirect to home or dashboard
+      navigate('/');
+    } catch (err) {
+      setError(err?.response?.data?.message || err?.message || 'Registration failed');
+    }
   };
 
   return (
@@ -35,7 +56,9 @@ export default function RegisterPage() {
         <h2 className="text-3xl font-bold text-gray-800 mb-2 text-center">Create Account</h2>
         <p className="text-gray-600 text-center mb-6">Sign up to get started</p>
 
-        <div className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {error && <p className="text-red-600 text-sm">{error}</p>}
+
           <div>
             <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
               Full Name
@@ -112,12 +135,13 @@ export default function RegisterPage() {
           </div>
 
           <button
-            onClick={handleSubmit}
-            className="w-full bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 transition-colors font-medium mt-6"
+            type="submit"
+            disabled={loading}
+            className="w-full bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 transition-colors font-medium mt-6 disabled:opacity-60"
           >
-            Sign Up
+            {loading ? 'Signing up...' : 'Sign Up'}
           </button>
-        </div>
+        </form>
 
         <p className="text-center text-gray-600 text-sm mt-6">
           Already have an account?{' '}

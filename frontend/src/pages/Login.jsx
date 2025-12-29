@@ -1,10 +1,14 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function LoginPage() {
   const [formData, setFormData] = useState({
     email: '',
     password: ''
   });
+  const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -14,13 +18,16 @@ export default function LoginPage() {
     }));
   };
 
-  const handleSubmit = () => {
-    console.log('Login submitted:', formData);
-    alert('Login successful!');
-    setFormData({
-      email: '',
-      password: ''
-    });
+  const handleSubmit = async () => {
+    try {
+      await login({ email: formData.email, password: formData.password });
+      // reset and navigate
+      setFormData({ email: '', password: '' });
+      navigate('/');
+    } catch (err) {
+      console.error(err);
+      alert(err?.response?.data?.message || 'Login failed');
+    }
   };
 
   return (
