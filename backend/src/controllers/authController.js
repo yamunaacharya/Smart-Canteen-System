@@ -7,7 +7,8 @@ const TOKEN_EXPIRY = '8h';
 
 export async function register(req, res) {
   try {
-    const { name, email, password, role = 'customer' } = req.body;
+    const { name, email, password, role: inputRole } = req.body;
+    const role = (inputRole || 'CUSTOMER').toUpperCase();
     if (!name || !email || !password) {
       return res.status(400).json({ message: 'Name, email and password are required' });
     }
