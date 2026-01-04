@@ -23,10 +23,16 @@ export default function LoginPage() {
 
   const handleSubmit = async () => {
     try {
-      await login({ email: formData.email, password: formData.password });
-      // reset and navigate
+      const user = await login({ email: formData.email, password: formData.password });
+      // reset form
       setFormData({ email: '', password: '' });
-      navigate('/');
+
+      // Redirect based on user role
+      if (user.role === 'ADMIN') {
+        navigate('/admin/dashboard');
+      } else {
+        navigate('/customer/dashboard');
+      }
     } catch (err) {
       console.error(err);
       alert(err?.response?.data?.message || 'Login failed');
@@ -69,22 +75,6 @@ export default function LoginPage() {
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                 placeholder="Enter your password"
               />
-            </div>
-
-            <div>
-              <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-1">
-                Role
-              </label>
-              <select
-                id="role"
-                name="role"
-                value={formData.role}
-                onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-              >
-                <option value="customer">Customer</option>
-                <option value="admin">Admin</option>
-              </select>
             </div>
 
             <button

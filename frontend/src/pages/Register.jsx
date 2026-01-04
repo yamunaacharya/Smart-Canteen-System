@@ -44,10 +44,8 @@ export default function RegisterPage() {
 
     try {
       await register({ name, email, password, role });
-      // Optionally reset form
       setFormData({ name: '', email: '', password: '', confirmPassword: '', role: 'customer' });
-      // Redirect to home or dashboard
-      navigate('/');
+      navigate('/login');
     } catch (err) {
       setError(err?.response?.data?.message || err?.message || 'Registration failed');
     }

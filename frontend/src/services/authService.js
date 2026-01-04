@@ -29,3 +29,8 @@ export async function me() {
   const res = await api.get('/auth/me');
   return res.data;
 }
+
+export async function changePassword(data) {
+  const res = await api.post('/auth/change-password', data);
+  return res.data;
+}
