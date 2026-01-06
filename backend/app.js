@@ -12,6 +12,7 @@ app.use(cors({ origin: 'http://localhost:5173' }));
 app.use(express.json());
 
 import authRoutes from './src/routes/auth.js';
+import userRoutes from './src/routes/user.js';
 
 app.get('/health', (req, res) => {
   res.json({ status: 'ok' });
@@ -19,6 +20,7 @@ app.get('/health', (req, res) => {
 
 // auth
 app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
 
 // example protected route
 import { requireAuth } from './src/lib/auth.js';
