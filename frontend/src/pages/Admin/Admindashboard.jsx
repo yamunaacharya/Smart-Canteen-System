@@ -1,11 +1,16 @@
 import { useAuth } from '../../contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
+<<<<<<< HEAD
 import Sidebar from './sidebar';
+=======
+import AdminSidebar from './sidebar';
+>>>>>>> 41c3e729ea5f4687d3afa0fa251e7512f060d7b5
 
 export default function AdminDashboard() {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
+    const location = useLocation();
     const [activeTab, setActiveTab] = useState('dashboard');
     const [stats, setStats] = useState({
         totalOrders: 0,
@@ -20,6 +25,17 @@ export default function AdminDashboard() {
         }
     }, [user, navigate]);
 
+    // Handle tab switching from navigation state
+    useEffect(() => {
+        if (location.state?.tab) {
+            setActiveTab(location.state.tab);
+            // Clear state so it doesn't persist on refresh if not desired, 
+            // though keeping it might be fine. Clearing it prevents "stuck" state 
+            // but we might want to update the URL query param instead in the future for better deep linking.
+            // For now, simple state consumption is fine.
+        }
+    }, [location.state]);
+
     const handleLogout = () => {
         logout();
         navigate('/login');
@@ -27,7 +43,12 @@ export default function AdminDashboard() {
 
     return (
         <div className="flex min-h-screen bg-gray-100">
+<<<<<<< HEAD
             <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+=======
+
+            <AdminSidebar active={activeTab} />
+>>>>>>> 41c3e729ea5f4687d3afa0fa251e7512f060d7b5
 
             <div className="ml-64 flex-1">
                 {/* Top Header */}
@@ -74,6 +95,11 @@ export default function AdminDashboard() {
     );
 }
 
+<<<<<<< HEAD
+=======
+
+
+>>>>>>> 41c3e729ea5f4687d3afa0fa251e7512f060d7b5
 function DashboardContent({ stats }) {
     return (
         <div>

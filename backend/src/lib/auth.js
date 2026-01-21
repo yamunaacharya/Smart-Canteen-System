@@ -16,10 +16,18 @@ export async function requireAuth(req, res, next) {
     const user = await prisma.user.findUnique({ where: { id: decoded.id } });
     if (!user) return res.status(401).json({ message: 'Unauthorized' });
 
+
     req.user = { id: user.id, email: user.email, role: user.role };
     next();
   } catch (err) {
     console.error('Auth middleware error:', err.message || err);
     return res.status(401).json({ message: 'Invalid or expired token' });
   }
+}
+
+export function requireAdmin(req, res, next) {
+  if (!req.user || req.user.role !== 'ADMIN') {
+    return res.status(403).json({ message: 'Access denied. Admins only.' });
+  }
+  next();
 }
