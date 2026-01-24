@@ -59,13 +59,15 @@ model FoodItem {
   id        Int        @id @default(autoincrement())
   name      String
   price     Float
-  qty       Int
+  qty       Int        @default(1)
+  category  String
+  description String?
   a_status  FoodStatus @default(AVAILABLE)
   image     String?
+  createdAt DateTime   @default(now())
 
   orderItems OrderItem[]
-
-  createdAt DateTime @default(now())
+  
 }
 
 /* ORDER */

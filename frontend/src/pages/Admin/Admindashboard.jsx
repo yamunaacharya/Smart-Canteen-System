@@ -1,11 +1,8 @@
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-<<<<<<< HEAD
-import Sidebar from './sidebar';
-=======
 import AdminSidebar from './sidebar';
->>>>>>> 41c3e729ea5f4687d3afa0fa251e7512f060d7b5
+import MenuItems from './menuitems';
 
 export default function AdminDashboard() {
     const { user, logout } = useAuth();
@@ -43,12 +40,7 @@ export default function AdminDashboard() {
 
     return (
         <div className="flex min-h-screen bg-gray-100">
-<<<<<<< HEAD
-            <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
-=======
-
-            <AdminSidebar active={activeTab} />
->>>>>>> 41c3e729ea5f4687d3afa0fa251e7512f060d7b5
+            <AdminSidebar activeTab={activeTab} setActiveTab={setActiveTab} />
 
             <div className="ml-64 flex-1">
                 {/* Top Header */}
@@ -95,11 +87,6 @@ export default function AdminDashboard() {
     );
 }
 
-<<<<<<< HEAD
-=======
-
-
->>>>>>> 41c3e729ea5f4687d3afa0fa251e7512f060d7b5
 function DashboardContent({ stats }) {
     return (
         <div>
@@ -218,7 +205,7 @@ function OrdersContent() {
 }
 
 function MenuContent() {
-    return <div className="text-gray-600">Menu content here</div>;
+    return <MenuItems />;
 }
 
 function CustomersContent() {

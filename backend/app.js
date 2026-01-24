@@ -2,7 +2,6 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 
-
 dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -10,9 +9,11 @@ const JWT_SECRET = process.env.JWT_SECRET || 'dev_secret';
 
 app.use(cors({ origin: 'http://localhost:5173' }));
 app.use(express.json());
+app.use('/uploads', express.static('uploads'));
 
 import authRoutes from './src/routes/auth.js';
 import userRoutes from './src/routes/user.js';
+import foodRoutes from './src/routes/food.js';
 
 app.get('/health', (req, res) => {
   res.json({ status: 'ok' });
@@ -21,6 +22,7 @@ app.get('/health', (req, res) => {
 // auth
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/menu', foodRoutes);
 
 // example protected route
 import { requireAuth } from './src/lib/auth.js';

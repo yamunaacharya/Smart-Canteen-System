@@ -23,8 +23,8 @@ export default function Navbar() {
                         <Link to="/" className="text-gray-700 hover:text-blue-600 transition-colors font-medium">
                             Home
                         </Link>
-                        <Link to="/features" className="text-gray-700 hover:text-blue-600 transition-colors font-medium">
-                            Features
+                        <Link to="/menu" className="text-gray-700 hover:text-blue-600 transition-colors font-medium">
+                            Menus
                         </Link>
                         <Link to="/about" className="text-gray-700 hover:text-blue-600 transition-colors font-medium">
                             About
@@ -80,8 +80,8 @@ export default function Navbar() {
                             <Link to="/" className="text-gray-700 hover:text-blue-600 transition-colors font-medium">
                                 Home
                             </Link>
-                            <Link to="/features" className="text-gray-700 hover:text-blue-600 transition-colors font-medium">
-                                Features
+                            <Link to="/menu" className="text-gray-700 hover:text-blue-600 transition-colors font-medium">
+                                Menus
                             </Link>
                             <Link to="/about" className="text-gray-700 hover:text-blue-600 transition-colors font-medium">
                                 About
