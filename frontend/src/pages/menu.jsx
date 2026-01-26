@@ -149,7 +149,11 @@ export default function Menu() {
                                 className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden group"
                             >
                                     {/* Image Container */}
-                                    <div className="relative overflow-hidden" style={{ width: '100%', height: '12rem', backgroundColor: '#f3f4f6' }}>
+                                    <div 
+                                        onClick={() => navigate(`/menu/${item.id}`)}
+                                        className="relative overflow-hidden cursor-pointer" 
+                                        style={{ width: '100%', height: '12rem', backgroundColor: '#f3f4f6' }}
+                                    >
                                         <img
                                             src={`http://localhost:3000${item.image}`}
                                             alt={item.name}

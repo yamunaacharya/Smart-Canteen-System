@@ -1,6 +1,6 @@
 import express from 'express';
 import multer from 'multer';
-import { getAllFoodItems, createFoodItem, updateFoodItem, deleteFoodItem } from '../controllers/foodController.js';
+import { getAllFoodItems, getFoodItemById, createFoodItem, updateFoodItem, deleteFoodItem } from '../controllers/foodController.js';
 import { requireAuth } from '../lib/auth.js';
 
 const router = express.Router();
@@ -22,6 +22,9 @@ const upload = multer({
 
 // Public: Get all food items
 router.get('/', getAllFoodItems);
+
+// Public: Get single food item by ID
+router.get('/:id', getFoodItemById);
 
 // Protected: Create food item (Admin only)
 router.post('/', requireAuth, upload.single('image'), createFoodItem);

@@ -78,7 +78,7 @@ export default function Footer() {
                 <div className="mt-12 pt-8 border-t border-gray-700">
                     <div className="flex flex-col md:flex-row justify-between items-center">
                         <p className="text-gray-400 text-sm">
-                            © {currentYear} Munchies and More. All rights reserved.
+                            © {currentYear} Munchies & More. All rights reserved.
                         </p>
                         <div className="flex space-x-6 mt-4 md:mt-0">
                             <a href="#" className="text-gray-400 hover:text-white text-sm transition-colors">

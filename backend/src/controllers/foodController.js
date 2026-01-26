@@ -31,6 +31,25 @@ export const getAllFoodItems = async (req, res) => {
     }
 };
 
+export const getFoodItemById = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const food = await prisma.foodItem.findUnique({
+            where: { id: parseInt(id) }
+        });
+
+        if (!food) {
+            return res.status(404).json({ error: 'Food item not found' });
+        }
+
+        res.json(food);
+    } catch (error) {
+        console.error('Error fetching food item:', error);
+        res.status(500).json({ error: 'Failed to fetch food item' });
+    }
+};
+
 export const createFoodItem = async (req, res) => {
     try {
         const { name, price, category, description, qty } = req.body;
