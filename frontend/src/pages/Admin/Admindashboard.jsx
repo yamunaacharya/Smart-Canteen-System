@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import AdminSidebar from './sidebar';
 import MenuItems from './menuitems';
+import ManageCustomer from './ManageCustomer';
 
 export default function AdminDashboard() {
     const { user, logout } = useAuth();
@@ -22,14 +23,11 @@ export default function AdminDashboard() {
         }
     }, [user, navigate]);
 
-    // Handle tab switching from navigation state
+    
     useEffect(() => {
         if (location.state?.tab) {
             setActiveTab(location.state.tab);
-            // Clear state so it doesn't persist on refresh if not desired, 
-            // though keeping it might be fine. Clearing it prevents "stuck" state 
-            // but we might want to update the URL query param instead in the future for better deep linking.
-            // For now, simple state consumption is fine.
+            
         }
     }, [location.state]);
 
@@ -201,7 +199,7 @@ function StatCard({ title, value, change, trend, icon, color }) {
 }
 
 function OrdersContent() {
-    return <div className="text-gray-600">Orders content here</div>;
+    return <div className="text-gray-600">Orders</div>;
 }
 
 function MenuContent() {
@@ -209,14 +207,11 @@ function MenuContent() {
 }
 
 function CustomersContent() {
-    return <div className="text-gray-600">Customers content here</div>;
+    return <ManageCustomer />;
 }
 
 function AnalyticsContent() {
-    return <div className="text-gray-600">Analytics content here</div>;
+    return <div className="text-gray-600">Analytics </div>;
 }
 
-function SettingsContent() {
-    return <div className="text-gray-600">Settings content here</div>;
-}
 

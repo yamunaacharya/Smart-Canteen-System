@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Upload, Trash2, Edit2, Plus } from 'lucide-react';
 import axios from 'axios';
 
@@ -9,6 +9,7 @@ export default function MenuItems() {
     const [imagePreview, setImagePreview] = useState(null);
     const [loading, setLoading] = useState(false);
     const [notification, setNotification] = useState(null);
+    const [initialLoading, setInitialLoading] = useState(true);
 
     const [formData, setFormData] = useState({
         name: '',
@@ -25,7 +26,34 @@ export default function MenuItems() {
         { id: 'snacks', name: 'Snacks' }
     ];
 
-    // Handle input change
+    // Shows notification
+    const showNotification = (message, type = 'success') => {
+        setNotification({ message, type });
+        setTimeout(() => setNotification(null), 3000);
+    };
+
+    // Fetching menu items from database
+    useEffect(() => {
+        const fetchMenuItems = async () => {
+            try {
+                setInitialLoading(true);
+                const response = await axios.get('http://localhost:3000/api/menu', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                setMenuItems(response.data);
+            } catch (error) {
+                console.error('Error fetching menu items:', error);
+                showNotification('Failed to load menu items', 'error');
+            } finally {
+                setInitialLoading(false);
+            }
+        };
+
+        fetchMenuItems();
+    }, []);
+
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({
@@ -42,7 +70,6 @@ export default function MenuItems() {
                 ...prev,
                 image: file
             }));
-            // Show preview
             const reader = new FileReader();
             reader.onloadend = () => {
                 setImagePreview(reader.result);
@@ -51,7 +78,6 @@ export default function MenuItems() {
         }
     };
 
-    // Submit form
     const handleSubmit = async (e) => {
         e.preventDefault();
         
@@ -142,7 +168,7 @@ export default function MenuItems() {
                 });
                 setMenuItems(menuItems.filter(item => item.id !== id));
                 showNotification('Menu item deleted successfully', 'success');
-            } catch (error) {
+            } catch {
                 showNotification('Failed to delete menu item', 'error');
             }
         }
@@ -160,12 +186,6 @@ export default function MenuItems() {
         });
         setImagePreview(null);
         setEditingId(null);
-    };
-
-    // Show notification
-    const showNotification = (message, type = 'success') => {
-        setNotification({ message, type });
-        setTimeout(() => setNotification(null), 3000);
     };
 
     return (
@@ -187,7 +207,6 @@ export default function MenuItems() {
                 </button>
             </div>
 
-            {/* Notification */}
             {notification && (
                 <div className={`mb-6 p-4 rounded-lg ${
                     notification.type === 'success' 
@@ -198,7 +217,6 @@ export default function MenuItems() {
                 </div>
             )}
 
-            {/* Add/Edit Form */}
             {showForm && (
                 <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
                     <h2 className="text-2xl font-bold text-gray-900 mb-6">
@@ -207,7 +225,6 @@ export default function MenuItems() {
 
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {/* Item Name */}
                             <div>
                                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                                     Item Name *
@@ -222,7 +239,6 @@ export default function MenuItems() {
                                 />
                             </div>
 
-                            {/* Category */}
                             <div>
                                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                                     Category *
@@ -241,7 +257,6 @@ export default function MenuItems() {
                                 </select>
                             </div>
 
-                            {/* Price */}
                             <div>
                                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                                     Price (Rs.) *
@@ -251,14 +266,12 @@ export default function MenuItems() {
                                     name="price"
                                     value={formData.price}
                                     onChange={handleInputChange}
-                                    placeholder="e.g., 299"
                                     step="0.01"
                                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     required
                                 />
                             </div>
 
-                            {/* Quantity */}
                             <div>
                                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                                     Quantity in Stock
@@ -268,13 +281,12 @@ export default function MenuItems() {
                                     name="quantity"
                                     value={formData.quantity}
                                     onChange={handleInputChange}
-                                    placeholder="e.g., 10"
                                     min="1"
                                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 />
                             </div>
 
-                            {/* Image Upload */}
+                            
                             <div>
                                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                                     Image {!editingId && '*'}
@@ -291,7 +303,7 @@ export default function MenuItems() {
                             </div>
                         </div>
 
-                        {/* Description */}
+                       
                         <div>
                             <label className="block text-sm font-semibold text-gray-700 mb-2">
                                 Description *
@@ -306,7 +318,6 @@ export default function MenuItems() {
                             />
                         </div>
 
-                        {/* Image Preview */}
                         {imagePreview && (
                             <div className="relative">
                                 <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -322,7 +333,6 @@ export default function MenuItems() {
                             </div>
                         )}
 
-                        {/* Form Actions */}
                         <div className="flex gap-4 pt-4">
                             <button
                                 type="submit"
@@ -346,7 +356,13 @@ export default function MenuItems() {
                 </div>
             )}
 
-            {/* Menu Items List */}
+            {initialLoading ? (
+                <div className="bg-white rounded-lg shadow-lg p-12">
+                    <div className="text-center">
+                        <p className="text-lg font-semibold text-gray-700">Loading menu items...</p>
+                    </div>
+                </div>
+            ) : (
             <div className="bg-white rounded-lg shadow-lg overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="w-full">
@@ -414,6 +430,7 @@ export default function MenuItems() {
                     </table>
                 </div>
             </div>
+            )}
         </div>
     );
 }
