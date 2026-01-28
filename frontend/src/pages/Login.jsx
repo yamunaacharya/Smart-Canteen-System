@@ -27,8 +27,12 @@ export default function LoginPage() {
       // reset form
       setFormData({ email: '', password: '' });
 
-      // Redirect to homepage
-      navigate('/');
+      // Role-based redirect
+      if (user?.role === 'ADMIN') {
+        navigate('/admin/dashboard');
+      } else {
+        navigate('/');
+      }
     } catch (err) {
       console.error(err);
       alert(err?.response?.data?.message || 'Login failed');
