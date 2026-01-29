@@ -186,3 +186,69 @@ export const deleteFoodItem = async (req, res) => {
         res.status(500).json({ error: 'Failed to delete food item', message: error.message });
     }
 };
+
+// Add item to cart - decrease stock quantity
+export const addToCartStock = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { quantity = 1 } = req.body;
+
+        const food = await prisma.foodItem.findUnique({
+            where: { id: parseInt(id) }
+        });
+
+        if (!food) {
+            return res.status(404).json({ error: 'Food item not found' });
+        }
+
+        if (food.a_status === 'OUT_OF_STOCK' || food.qty < quantity) {
+            return res.status(400).json({ error: `${food.name} is out of stock or insufficient quantity` });
+        }
+
+        const newQty = food.qty - quantity;
+
+        const updatedFood = await prisma.foodItem.update({
+            where: { id: parseInt(id) },
+            data: {
+                qty: newQty,
+                a_status: newQty <= 0 ? 'OUT_OF_STOCK' : food.a_status
+            }
+        });
+
+        res.json({ success: true, item: updatedFood });
+    } catch (error) {
+        console.error('Error adding to cart:', error);
+        res.status(500).json({ error: 'Failed to add item to cart', message: error.message });
+    }
+};
+
+// Remove item from cart - restore stock quantity
+export const removeFromCartStock = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { quantity = 1 } = req.body;
+
+        const food = await prisma.foodItem.findUnique({
+            where: { id: parseInt(id) }
+        });
+
+        if (!food) {
+            return res.status(404).json({ error: 'Food item not found' });
+        }
+
+        const newQty = food.qty + quantity;
+
+        const updatedFood = await prisma.foodItem.update({
+            where: { id: parseInt(id) },
+            data: {
+                qty: newQty,
+                a_status: newQty > 0 ? 'AVAILABLE' : food.a_status
+            }
+        });
+
+        res.json({ success: true, item: updatedFood });
+    } catch (error) {
+        console.error('Error removing from cart:', error);
+        res.status(500).json({ error: 'Failed to remove item from cart', message: error.message });
+    }
+};

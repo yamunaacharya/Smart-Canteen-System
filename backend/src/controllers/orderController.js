@@ -9,26 +9,56 @@ export const createOrder = async (req, res) => {
             return res.status(400).json({ error: 'Items are required' });
         }
 
+        // Validate stock availability for all items
+        for (const item of items) {
+            const food = await prisma.foodItem.findUnique({ where: { id: item.id } });
+            if (!food) {
+                return res.status(400).json({ error: `Item not found: ${item.id}` });
+            }
+            if (food.a_status === 'OUT_OF_STOCK' || food.qty < item.quantity) {
+                return res.status(400).json({ error: `${food.name} is out of stock or insufficient quantity` });
+            }
+        }
+
         // Calculate total amount
         const totalAmt = items.reduce((total, item) => total + (item.price * item.quantity), 0);
 
-        // Create order
-        const order = await prisma.order.create({
-            data: {
-                customerId,
-                totalAmt,
-                status: 'PROCESSING',
-                orderItems: {
-                    create: items.map(item => ({
-                        foodId: item.id,
-                        qty: item.quantity,
-                        price: item.price
-                    }))
-                }
-            },
-            include: {
-                orderItems: true
+        // Use transaction to create order and update stock atomically
+        const order = await prisma.$transaction(async (tx) => {
+            // Update stock for each item
+            for (const item of items) {
+                const food = await tx.foodItem.findUnique({ where: { id: item.id } });
+                const newQty = food.qty - item.quantity;
+
+                await tx.foodItem.update({
+                    where: { id: item.id },
+                    data: {
+                        qty: newQty,
+                        a_status: newQty <= 0 ? 'OUT_OF_STOCK' : food.a_status
+                    }
+                });
             }
+
+            // Create order
+            const newOrder = await tx.order.create({
+                data: {
+                    customerId,
+                    totalAmt,
+                    status: 'PROCESSING',
+                    orderItems: {
+                        create: items.map(item => ({
+                            foodId: item.id,
+                            qty: item.quantity,
+                            price: item.price
+                        }))
+                    }
+                },
+                include: {
+                    orderItems: true
+                }
+            });
+
+            return newOrder;
         });
 
         res.status(201).json(order);

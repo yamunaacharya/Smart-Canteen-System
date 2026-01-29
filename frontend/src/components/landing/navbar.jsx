@@ -1,6 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
+import { useCart } from '../../contexts/CartContext';
 import { ChevronDown, User, ShoppingCart } from 'lucide-react';
 
 import logo from '../../assets/logo.png';
@@ -8,6 +9,7 @@ import logo from '../../assets/logo.png';
 export default function Navbar() {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const { user, logout } = useAuth();
+    const { cartCount } = useCart();
     const navigate = useNavigate();
 
     const handleLogout = () => {
@@ -58,8 +60,13 @@ export default function Navbar() {
                         {user ? (
                             <>
                                 {user?.role === 'CUSTOMER' && (
-                                    <Link to="/cart" className="p-2 rounded-lg hover:bg-gray-100 transition-colors" title="Cart">
+                                    <Link to="/cart" className="relative p-2 rounded-lg hover:bg-gray-100 transition-colors" title="Cart">
                                         <ShoppingCart className="w-5 h-5 text-gray-700" />
+                                        {cartCount > 0 && (
+                                            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                                                {cartCount > 99 ? '99+' : cartCount}
+                                            </span>
+                                        )}
                                     </Link>
                                 )}
                                 <div className="relative">

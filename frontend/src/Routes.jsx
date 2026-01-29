@@ -8,6 +8,7 @@ import CustomerDashboard from './pages/User/Customerdashboard'
 import CustomerProfile from './pages/User/customerprofile'
 import Menu from './pages/menu'
 import SingleItemPage from './pages/SingleItemPage'
+import Cart from './pages/Cart'
 
 export default function AppRoutes() {
   return (
@@ -17,6 +18,7 @@ export default function AppRoutes() {
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/menu" element={<Menu />} />
       <Route path="/menu/:id" element={<SingleItemPage />} />
+      <Route path="/cart" element={<Cart />} />
       <Route path="/admin/dashboard" element={<AdminDashboard />} />
       <Route path="/admin/customers" element={<ManageCustomer />} />
       <Route path="/customer/dashboard" element={<CustomerDashboard />} />
