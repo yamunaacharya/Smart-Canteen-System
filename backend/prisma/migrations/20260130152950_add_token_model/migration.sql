@@ -1,0 +1,15 @@
+-- CreateTable
+CREATE TABLE `Token` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `tokenNumber` INTEGER NOT NULL,
+    `tokenDate` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `status` ENUM('PREPARING', 'READY', 'COLLECTED') NOT NULL DEFAULT 'PREPARING',
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `orderId` INTEGER NOT NULL,
+
+    UNIQUE INDEX `Token_orderId_key`(`orderId`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- AddForeignKey
+ALTER TABLE `Token` ADD CONSTRAINT `Token_orderId_fkey` FOREIGN KEY (`orderId`) REFERENCES `Order`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;

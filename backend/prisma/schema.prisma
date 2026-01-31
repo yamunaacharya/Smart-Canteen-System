@@ -40,6 +40,13 @@ enum PaymentMethod {
   KHALTI
 }
 
+enum TokenStatus {
+  PREPARING
+  READY
+  COLLECTED
+}
+
+
 /*   USER */
 
 model User {
@@ -84,6 +91,9 @@ model Order {
 
   orderItems OrderItem[]
   payments   Payment[]
+
+  // token relation
+  token      Token?
 }
 
 /* ORDER ITEMS */
@@ -99,7 +109,7 @@ model OrderItem {
 
   // relation to FoodItem
   foodId  Int
-  food    FoodItem @relation(fields: [foodId], references: [id])
+  food    FoodItem @relation(fields: [foodId], references: [id]) 
 }
 
 /* PAYMENTS */
@@ -113,3 +123,18 @@ model Payment {
   orderId Int
   order   Order @relation(fields: [orderId], references: [id])
 }
+
+/* Token */
+
+model Token {
+  id          Int         @id @default(autoincrement())
+  tokenNumber Int
+  tokenDate   DateTime    @default(now())
+  status      TokenStatus @default(PREPARING)
+  createdAt   DateTime    @default(now())
+
+  // relation to Order 
+  orderId Int   @unique
+  order   Order @relation(fields: [orderId], references: [id])
+}
+

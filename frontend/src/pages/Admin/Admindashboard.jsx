@@ -20,14 +20,35 @@ export default function AdminDashboard() {
     useEffect(() => {
         if (user && user.role !== 'ADMIN') {
             navigate('/customer/dashboard');
+            return;
+        }
+
+        const fetchStats = async () => {
+            try {
+                const response = await fetch('http://localhost:3000/api/stats/admin', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    setStats(data);
+                }
+            } catch (error) {
+                console.error('Error fetching stats:', error);
+            }
+        };
+
+        if (user && user.role === 'ADMIN') {
+            fetchStats();
         }
     }, [user, navigate]);
 
-    
+
     useEffect(() => {
         if (location.state?.tab) {
             setActiveTab(location.state.tab);
-            
+
         }
     }, [location.state]);
 

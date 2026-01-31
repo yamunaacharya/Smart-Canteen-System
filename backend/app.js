@@ -14,6 +14,8 @@ app.use('/uploads', express.static('uploads'));
 import authRoutes from './src/routes/auth.js';
 import userRoutes from './src/routes/user.js';
 import foodRoutes from './src/routes/food.js';
+import orderRoutes from './src/routes/orders.js';
+import statsRoutes from './src/routes/stats.js';
 
 app.get('/health', (req, res) => {
   res.json({ status: 'ok' });
@@ -23,6 +25,8 @@ app.get('/health', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/menu', foodRoutes);
+app.use('/api/orders', orderRoutes);
+app.use('/api/stats', statsRoutes);
 
 // example protected route
 import { requireAuth } from './src/lib/auth.js';
