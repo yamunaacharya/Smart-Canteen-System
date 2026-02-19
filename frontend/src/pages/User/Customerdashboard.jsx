@@ -2,6 +2,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import CustomerSidebar from './csidebar';
+import api from '../../services/api';
 
 export default function CustomerDashboard() {
     const { user, logout } = useAuth();
@@ -105,6 +106,7 @@ export default function CustomerDashboard() {
                 <main className="p-8">
                     {activeTab === 'dashboard' && <DashboardContent stats={stats} />}
                     {activeTab === 'orders' && <OrdersContent />}
+                    {activeTab === 'tokens' && <TokensContent />}
                     {activeTab === 'settings' && <SettingsContent />}
                 </main>
             </div>
@@ -174,6 +176,202 @@ function OrdersContent() {
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Your Orders</h3>
             <p className="text-gray-500">No orders yet</p>
         </div>
+    );
+}
+
+function TokensContent() {
+    const [tokens, setTokens] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [selectedToken, setSelectedToken] = useState(null);
+
+    const statusColors = {
+        COMPLETED: 'bg-green-100 text-green-700',
+        PROCESSING: 'bg-amber-100 text-amber-700',
+        CANCELLED: 'bg-red-100 text-red-700',
+        INCART: 'bg-blue-100 text-blue-700'
+    };
+
+    const tokenStatusColors = {
+        PREPARING: 'bg-yellow-100 text-yellow-700',
+        READY: 'bg-green-100 text-green-700',
+        COLLECTED: 'bg-gray-100 text-gray-500'
+    };
+
+    useEffect(() => {
+        const fetchTokens = async () => {
+            try {
+                const response = await api.get('/payments/tokens');
+                setTokens(response.data);
+            } catch (error) {
+                console.error('Error fetching tokens:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchTokens();
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="flex justify-center py-12">
+                <div className="w-10 h-10 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+            </div>
+        );
+    }
+
+    if (tokens.length === 0) {
+        return (
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 text-center">
+                <svg className="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
+                </svg>
+                <h3 className="text-lg font-semibold text-gray-700 mb-1">No tokens yet</h3>
+                <p className="text-gray-400 text-sm">Tokens will appear here after you place an order</p>
+            </div>
+        );
+    }
+
+    return (
+        <>
+            <div className="space-y-4">
+                {tokens.map((token) => (
+                    <div key={token.id} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                        {/* Token header */}
+                        <div className="flex items-center justify-between px-5 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+                            <div className="flex items-center gap-3">
+                                <span className="text-2xl font-extrabold">#{String(token.tokenNumber).padStart(4, '0')}</span>
+                                <span className={`px-2 py-0.5 rounded-full text-[11px] font-bold ${tokenStatusColors[token.status] || 'bg-gray-100 text-gray-700'}`}>
+                                    {token.status}
+                                </span>
+                            </div>
+                            <span className="text-xs opacity-80">{new Date(token.createdAt).toLocaleDateString()}</span>
+                        </div>
+                        {/* Token body */}
+                        <div className="px-5 py-3">
+                            <div className="flex items-center justify-between mb-2">
+                                <span className="text-xs text-gray-400">Order #{token.order.id}</span>
+                                <span className={`px-2 py-0.5 rounded-full text-[11px] font-bold ${statusColors[token.order.status] || 'bg-gray-100 text-gray-700'}`}>
+                                    {token.order.status}
+                                </span>
+                            </div>
+                            <div className="space-y-1 mb-2">
+                                {token.order.items.map((item, idx) => (
+                                    <div key={idx} className="flex justify-between text-sm">
+                                        <span className="text-gray-600">{item.name} × {item.qty}</span>
+                                        <span className="font-medium text-gray-700">Rs. {item.qty * item.price}</span>
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="flex justify-between items-center pt-2 border-t border-gray-100">
+                                <span className="text-sm font-bold text-gray-800">Total</span>
+                                <span className="text-sm font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Rs. {token.order.totalAmt}</span>
+                            </div>
+                            <button
+                                onClick={() => setSelectedToken(token)}
+                                className="mt-3 w-full py-2 text-sm font-medium text-blue-600 border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors"
+                            >
+                                View Full Token
+                            </button>
+                        </div>
+                    </div>
+                ))}
+            </div>
+
+            {/* Full Token Receipt Modal */}
+            {selectedToken && (
+                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setSelectedToken(null)}>
+                    <div className="bg-white rounded-xl shadow-2xl overflow-hidden max-w-sm w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+                        {/* Ticket header */}
+                        <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-5 py-4 text-white text-center">
+                            <svg className="w-6 h-6 mx-auto mb-1 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                            </svg>
+                            <h2 className="text-sm font-bold tracking-wide">ORDER RECEIPT</h2>
+                            <div className="mt-2 bg-white/20 rounded-lg py-2 px-3">
+                                <p className="text-[10px] uppercase tracking-widest opacity-80">Token Number</p>
+                                <p className="text-3xl font-extrabold">#{String(selectedToken.tokenNumber).padStart(4, '0')}</p>
+                            </div>
+                        </div>
+
+                        {/* Ticket body */}
+                        <div className="px-5 py-4 space-y-3">
+                            {/* Customer info */}
+                            <div className="flex items-center gap-2 pb-3 border-b border-dashed border-gray-200">
+                                <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                </svg>
+                                <div>
+                                    <p className="text-[10px] text-gray-400 uppercase tracking-wide">Customer</p>
+                                    <p className="text-sm font-semibold text-gray-800">{selectedToken.customer.name}</p>
+                                    <p className="text-[10px] text-gray-400">ID: #{selectedToken.customer.id}</p>
+                                </div>
+                            </div>
+
+                            {/* Order ID & Date */}
+                            <div className="flex justify-between pb-3 border-b border-dashed border-gray-200">
+                                <div>
+                                    <p className="text-[10px] text-gray-400">Order ID</p>
+                                    <p className="text-sm font-semibold text-gray-700">#{selectedToken.order.id}</p>
+                                </div>
+                                <div className="text-right">
+                                    <p className="text-[10px] text-gray-400">Date</p>
+                                    <p className="text-sm font-semibold text-gray-700">{new Date(selectedToken.order.orderDate).toLocaleDateString()}</p>
+                                </div>
+                            </div>
+
+                            {/* Items */}
+                            <div className="pb-3 border-b border-dashed border-gray-200">
+                                <p className="text-[10px] text-gray-400 uppercase tracking-wide mb-2">Items Ordered</p>
+                                <div className="space-y-1.5">
+                                    {selectedToken.order.items.map((item, index) => (
+                                        <div key={index} className="flex justify-between items-center">
+                                            <div>
+                                                <p className="text-sm font-medium text-gray-700">{item.name}</p>
+                                                <p className="text-[11px] text-gray-400">{item.qty} × Rs. {item.price}</p>
+                                            </div>
+                                            <p className="text-sm font-semibold text-gray-800">Rs. {item.subtotal}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Total */}
+                            <div className="flex justify-between items-center pb-3 border-b border-dashed border-gray-200">
+                                <p className="text-base font-bold text-gray-800">Total</p>
+                                <p className="text-lg font-extrabold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                                    Rs. {selectedToken.order.totalAmt}
+                                </p>
+                            </div>
+
+                            {/* Token Status */}
+                            <div className="flex items-center justify-between">
+                                <p className="text-[10px] text-gray-400 uppercase tracking-wide">Token Status</p>
+                                <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold ${tokenStatusColors[selectedToken.status] || 'bg-gray-100 text-gray-700'}`}>
+                                    {selectedToken.status}
+                                </span>
+                            </div>
+                        </div>
+
+                        {/* Ticket footer */}
+                        <div className="bg-gray-50 px-5 py-3 text-center border-t border-dashed border-gray-200">
+                            <p className="text-xs text-gray-500 font-medium">
+                                🎫 Show this token at the counter to collect your order
+                            </p>
+                        </div>
+
+                        {/* Close button */}
+                        <div className="px-5 py-3">
+                            <button
+                                onClick={() => setSelectedToken(null)}
+                                className="w-full py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:shadow-lg transition-all font-medium text-sm"
+                            >
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </>
     );
 }
 

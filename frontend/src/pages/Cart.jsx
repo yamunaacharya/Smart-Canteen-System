@@ -102,10 +102,10 @@ export default function Cart() {
 
         setLoading(true);
         try {
-            await api.post('/orders', { items: cart });
+            const response = await api.post('/orders', { items: cart });
             clearCart();
-            showNotification('Order placed successfully!');
-            setTimeout(() => navigate('/customer/dashboard'), 2000);
+            // Redirect to payment immediately
+            navigate('/payment', { state: { orderId: response.data?.id, total: total } });
         } catch (err) {
             console.error('Error placing order:', err);
             showNotification(err?.response?.data?.error || 'Failed to place order', 'error');
