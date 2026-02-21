@@ -1,9 +1,10 @@
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import AdminSidebar from './sidebar';
 import MenuItems from './menuitems';
 import ManageCustomer from './ManageCustomer';
+import ManageOrder from './ManageOrder';
 
 export default function AdminDashboard() {
     const { user, logout } = useAuth();
@@ -107,6 +108,55 @@ export default function AdminDashboard() {
 }
 
 function DashboardContent({ stats }) {
+    const [processingOrders, setProcessingOrders] = useState([]);
+    const [loadingOrders, setLoadingOrders] = useState(true);
+    const [updatingId, setUpdatingId] = useState(null);
+
+    const fetchProcessingOrders = useCallback(async () => {
+        try {
+            setLoadingOrders(true);
+            const response = await fetch('http://localhost:3000/api/orders/admin/all', {
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+            });
+            if (response.ok) {
+                const data = await response.json();
+                setProcessingOrders(data.filter(o => o.status === 'PROCESSING'));
+            }
+        } catch (err) {
+            console.error('Failed to fetch processing orders:', err);
+        } finally {
+            setLoadingOrders(false);
+        }
+    }, []);
+
+    useEffect(() => { fetchProcessingOrders(); }, [fetchProcessingOrders]);
+
+    const handleStatusChange = async (orderId, newStatus) => {
+        if (newStatus === 'CANCELLED' && !window.confirm(`Cancel order #${orderId}? Stock will be restored.`)) return;
+        setUpdatingId(orderId);
+        try {
+            const res = await fetch(`http://localhost:3000/api/orders/${orderId}/status`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify({ status: newStatus })
+            });
+            if (res.ok) {
+                setProcessingOrders(prev => prev.filter(o => o.id !== orderId));
+            } else {
+                const err = await res.json();
+                alert(err.error || 'Failed to update status');
+            }
+        } catch (err) {
+            console.error(err);
+            alert('Failed to update status');
+        } finally {
+            setUpdatingId(null);
+        }
+    };
+
     return (
         <div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -148,8 +198,8 @@ function DashboardContent({ stats }) {
                 />
                 <StatCard
                     title="Pending"
-                    value={stats.pendingOrders}
-                    change="-2.4%"
+                    value={processingOrders.length || stats.pendingOrders}
+                    change="live"
                     trend="down"
                     icon={
                         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -160,35 +210,77 @@ function DashboardContent({ stats }) {
                 />
             </div>
 
-            {/* Recent Orders Table */}
+            {/* Processing Orders Table */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-                <div className="p-6 border-b border-gray-200">
-                    <h3 className="text-lg font-semibold text-gray-900">Recent Orders</h3>
+                <div className="p-6 border-b border-gray-200 flex items-center justify-between">
+                    <div>
+                        <h3 className="text-lg font-semibold text-gray-900">Processing Orders</h3>
+                        <p className="text-sm text-gray-400 mt-0.5">Orders waiting for action</p>
+                    </div>
+                    <span className="px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-xs font-semibold">
+                        {processingOrders.length} pending
+                    </span>
                 </div>
                 <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50">
-                            <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                            </tr>
-                        </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
-                            <tr>
-                                <td colSpan="5" className="px-6 py-12 text-center">
-                                    <div className="flex flex-col items-center">
-                                        <svg className="w-12 h-12 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                        </svg>
-                                        <p className="text-gray-500 font-medium">No orders yet</p>
-                                    </div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                    {loadingOrders ? (
+                        <div className="flex justify-center py-8">
+                            <div className="w-8 h-8 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
+                        </div>
+                    ) : processingOrders.length === 0 ? (
+                        <div className="py-12 text-center">
+                            <svg className="w-12 h-12 text-gray-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <p className="text-gray-500 font-medium">No pending orders — all clear!</p>
+                        </div>
+                    ) : (
+                        <table className="min-w-full divide-y divide-gray-200 text-sm">
+                            <thead className="bg-gray-50">
+                                <tr>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Items</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody className="bg-white divide-y divide-gray-200">
+                                {processingOrders.map(order => (
+                                    <tr key={order.id} className={`hover:bg-gray-50 transition-colors ${updatingId === order.id ? 'opacity-50' : ''}`}>
+                                        <td className="px-6 py-3 font-mono font-semibold text-gray-700">#{order.id}</td>
+                                        <td className="px-6 py-3">
+                                            <div className="font-medium text-gray-800">{order.customer?.name || '—'}</div>
+                                            <div className="text-xs text-gray-400">{order.customer?.email}</div>
+                                        </td>
+                                        <td className="px-6 py-3 text-gray-600">{order.orderItems.length} item{order.orderItems.length !== 1 ? 's' : ''}</td>
+                                        <td className="px-6 py-3 font-semibold text-gray-800">Rs. {order.totalAmt}</td>
+                                        <td className="px-6 py-3 text-gray-500 whitespace-nowrap">
+                                            {new Date(order.orderDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                                        </td>
+                                        <td className="px-6 py-3">
+                                            <div className="flex gap-2">
+                                                <button
+                                                    onClick={() => handleStatusChange(order.id, 'COMPLETED')}
+                                                    disabled={updatingId === order.id}
+                                                    className="px-3 py-1 bg-green-100 text-green-700 hover:bg-green-200 rounded-lg text-xs font-semibold transition-colors disabled:opacity-50"
+                                                >
+                                                    ✓ Complete
+                                                </button>
+                                                <button
+                                                    onClick={() => handleStatusChange(order.id, 'CANCELLED')}
+                                                    disabled={updatingId === order.id}
+                                                    className="px-3 py-1 bg-red-100 text-red-700 hover:bg-red-200 rounded-lg text-xs font-semibold transition-colors disabled:opacity-50"
+                                                >
+                                                    ✕ Cancel
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    )}
                 </div>
             </div>
         </div>
@@ -220,7 +312,7 @@ function StatCard({ title, value, change, trend, icon, color }) {
 }
 
 function OrdersContent() {
-    return <div className="text-gray-600">Orders</div>;
+    return <ManageOrder />;
 }
 
 function MenuContent() {
@@ -232,7 +324,5 @@ function CustomersContent() {
 }
 
 function AnalyticsContent() {
-    return <div className="text-gray-600">Analytics </div>;
+    return <div className="text-gray-600">Analytics</div>;
 }
-
-

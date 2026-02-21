@@ -119,11 +119,7 @@ export const processCashPayment = async (req, res) => {
                 }
             });
 
-            // Update order status to COMPLETED
-            await tx.order.update({
-                where: { id: order.id },
-                data: { status: 'COMPLETED' }
-            });
+            // Order stays in PROCESSING — only admin can set COMPLETED
 
             return { payment, token };
         });
@@ -134,7 +130,7 @@ export const processCashPayment = async (req, res) => {
                 id: order.id,
                 orderDate: order.orderDate,
                 totalAmt: order.totalAmt,
-                status: 'COMPLETED'
+                status: 'PROCESSING'
             },
             customer: order.customer,
             items: order.orderItems.map(item => ({

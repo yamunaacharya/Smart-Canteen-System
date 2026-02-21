@@ -137,16 +137,46 @@ export const updateOrderStatus = async (req, res) => {
             return res.status(400).json({ error: 'Invalid status' });
         }
 
-        const order = await prisma.order.update({
-            where: { id: parseInt(id) },
-            data: { status },
-            include: {
-                orderItems: {
-                    include: {
-                        food: true
+        const order = await prisma.$transaction(async (tx) => {
+            // If cancelling, restore stock for each item
+            if (status === 'CANCELLED') {
+                const existingOrder = await tx.order.findUnique({
+                    where: { id: parseInt(id) },
+                    include: { orderItems: true }
+                });
+
+                // Only restore stock if not already cancelled
+                if (existingOrder && existingOrder.status !== 'CANCELLED') {
+                    for (const item of existingOrder.orderItems) {
+                        const food = await tx.foodItem.findUnique({ where: { id: item.foodId } });
+                        if (food) {
+                            const restoredQty = food.qty + item.qty;
+                            await tx.foodItem.update({
+                                where: { id: item.foodId },
+                                data: {
+                                    qty: restoredQty,
+                                    // Flip back to AVAILABLE if it was out of stock
+                                    a_status: food.a_status === 'OUT_OF_STOCK' ? 'AVAILABLE' : food.a_status
+                                }
+                            });
+                        }
                     }
                 }
             }
+
+            // Update order status
+            return await tx.order.update({
+                where: { id: parseInt(id) },
+                data: { status },
+                include: {
+                    orderItems: {
+                        include: { food: true }
+                    },
+                    customer: {
+                        select: { id: true, name: true, email: true }
+                    }
+                }
+            });
         });
 
         res.json(order);

@@ -10,13 +10,13 @@ router.post('/', requireAuth, createOrder);
 // Protected: Get user's orders
 router.get('/', requireAuth, getUserOrders);
 
+// Protected: Get all orders (Admin only) — MUST be before /:id to avoid route conflict
+router.get('/admin/all', requireAuth, getAllOrders);
+
 // Protected: Get order by ID
 router.get('/:id', requireAuth, getOrderById);
 
 // Protected: Update order status (Admin only)
 router.patch('/:id/status', requireAuth, updateOrderStatus);
-
-// Protected: Get all orders (Admin only)
-router.get('/admin/all', requireAuth, getAllOrders);
 
 export default router;

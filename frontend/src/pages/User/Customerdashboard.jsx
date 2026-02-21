@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import CustomerSidebar from './csidebar';
 import api from '../../services/api';
+import OrdersContent from './order';
 
 export default function CustomerDashboard() {
     const { user, logout } = useAuth();
@@ -166,15 +167,6 @@ function DashboardContent({ stats }) {
                     </div>
                 </div>
             </div>
-        </div>
-    );
-}
-
-function OrdersContent() {
-    return (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Your Orders</h3>
-            <p className="text-gray-500">No orders yet</p>
         </div>
     );
 }
