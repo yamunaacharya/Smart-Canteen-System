@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useCart } from '../contexts/CartContext';
 import Navbar from '../components/landing/navbar';
 import Footer from '../components/landing/footer';
 import api from '../services/api';
@@ -10,6 +11,7 @@ export default function Payment() {
     const location = useLocation();
     const navigate = useNavigate();
     const { user } = useAuth();
+    const { clearCart } = useCart();
 
     const { orderId, total } = location.state || {};
     const [step, setStep] = useState('choose'); // 'choose' | 'processing' | 'cash-success'
@@ -29,16 +31,18 @@ export default function Payment() {
         setError(null);
         try {
             const response = await api.post('/payments/cash', { orderId });
+            clearCart(); // Clear cart only after successful cash payment
             setReceipt(response.data);
             setStep('cash-success');
         } catch (err) {
             console.error('Payment error:', err);
             setError(err?.response?.data?.error || 'Payment failed. Please try again.');
             setStep('choose');
+            // Note: Cart items are preserved on payment failure
         }
     };
 
-    // Handle khalti - placeholder
+    // Handle khalti - redirect to khalti payment flow
     const handleKhaltiPayment = () => {
         navigate('/khalti-payment', { state: { orderId, total } });
     };

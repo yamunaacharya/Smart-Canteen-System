@@ -14,18 +14,26 @@ export default function OrdersContent() {
         INCART: { label: 'In Cart', classes: 'bg-blue-100 text-blue-700' },
     };
 
+    const tokenStatusConfig = {
+        PREPARING: { label: 'Preparing', classes: 'bg-yellow-100 text-yellow-700' },
+        READY: { label: 'Ready', classes: 'bg-blue-100 text-blue-700' },
+        COLLECTED: { label: 'Collected', classes: 'bg-gray-100 text-gray-700' },
+    };
+
+    const fetchOrders = async () => {
+        try {
+            setLoading(true);
+            const response = await api.get('/orders');
+            setOrders(response.data);
+        } catch (err) {
+            console.error('Error fetching orders:', err);
+            setError('Failed to load orders. Please try again.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
-        const fetchOrders = async () => {
-            try {
-                const response = await api.get('/orders');
-                setOrders(response.data);
-            } catch (err) {
-                console.error('Error fetching orders:', err);
-                setError('Failed to load orders. Please try again.');
-            } finally {
-                setLoading(false);
-            }
-        };
         fetchOrders();
     }, []);
 
@@ -62,9 +70,19 @@ export default function OrdersContent() {
 
     return (
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-200">
-                <h3 className="text-lg font-semibold text-gray-800">Order History</h3>
-                <p className="text-sm text-gray-400 mt-0.5">{orders.length} order{orders.length !== 1 ? 's' : ''} found</p>
+            <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+                <div>
+                    <h3 className="text-lg font-semibold text-gray-800">Order History</h3>
+                    <p className="text-sm text-gray-400 mt-0.5">{orders.length} order{orders.length !== 1 ? 's' : ''} found</p>
+                </div>
+                <button
+                    onClick={fetchOrders}
+                    disabled={loading}
+                    className="px-3 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors disabled:opacity-50"
+                    title="Refresh order status"
+                >
+                    {loading ? 'Refreshing...' : 'Refresh'}
+                </button>
             </div>
 
             <div className="overflow-x-auto">
@@ -76,12 +94,15 @@ export default function OrdersContent() {
                             <th className="text-left px-6 py-3 font-semibold">Items</th>
                             <th className="text-left px-6 py-3 font-semibold">Total</th>
                             <th className="text-left px-6 py-3 font-semibold">Status</th>
+                            <th className="text-left px-6 py-3 font-semibold">Token #</th>
+                            <th className="text-left px-6 py-3 font-semibold">Token Status</th>
                             <th className="text-left px-6 py-3 font-semibold">Details</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100">
                         {orders.map((order) => {
                             const cfg = statusConfig[order.status] || { label: order.status, classes: 'bg-gray-100 text-gray-700' };
+                            const tokenCfg = order.token ? tokenStatusConfig[order.token.status] : null;
                             const isExpanded = expandedOrder === order.id;
                             return (
                                 <>
@@ -110,6 +131,18 @@ export default function OrdersContent() {
                                                 {cfg.label}
                                             </span>
                                         </td>
+                                        <td className="px-6 py-4 font-mono font-semibold text-gray-700">
+                                            {order.token ? `#${String(order.token.tokenNumber).padStart(4, '0')}` : '—'}
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            {order.token && tokenCfg ? (
+                                                <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${tokenCfg.classes}`}>
+                                                    {tokenCfg.label}
+                                                </span>
+                                            ) : (
+                                                <span className="text-xs text-gray-400">—</span>
+                                            )}
+                                        </td>
                                         <td className="px-6 py-4">
                                             <button
                                                 onClick={() => setExpandedOrder(isExpanded ? null : order.id)}
@@ -126,7 +159,7 @@ export default function OrdersContent() {
                                     {/* Expanded items row */}
                                     {isExpanded && (
                                         <tr key={`${order.id}-expanded`} className="bg-indigo-50/40">
-                                            <td colSpan={6} className="px-8 py-4">
+                                            <td colSpan={8} className="px-8 py-4">
                                                 <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Items Ordered</p>
                                                 <table className="w-full text-sm">
                                                     <thead>

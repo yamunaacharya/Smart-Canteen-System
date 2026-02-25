@@ -103,7 +103,8 @@ export default function Cart() {
         setLoading(true);
         try {
             const response = await api.post('/orders', { items: cart });
-            clearCart();
+            // Don't clear cart yet - keep items in case payment fails
+            // Cart will only be cleared after successful payment verification
             // Redirect to payment immediately
             navigate('/payment', { state: { orderId: response.data?.id, total: total } });
         } catch (err) {

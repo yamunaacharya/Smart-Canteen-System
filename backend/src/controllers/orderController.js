@@ -23,42 +23,23 @@ export const createOrder = async (req, res) => {
         // Calculate total amount
         const totalAmt = items.reduce((total, item) => total + (item.price * item.quantity), 0);
 
-        // Use transaction to create order and update stock atomically
-        const order = await prisma.$transaction(async (tx) => {
-            // Update stock for each item
-            for (const item of items) {
-                const food = await tx.foodItem.findUnique({ where: { id: item.id } });
-                const newQty = food.qty - item.quantity;
-
-                await tx.foodItem.update({
-                    where: { id: item.id },
-                    data: {
-                        qty: newQty,
-                        a_status: newQty <= 0 ? 'OUT_OF_STOCK' : food.a_status
-                    }
-                });
-            }
-
-            // Create order
-            const newOrder = await tx.order.create({
-                data: {
-                    customerId,
-                    totalAmt,
-                    status: 'PROCESSING',
-                    orderItems: {
-                        create: items.map(item => ({
-                            foodId: item.id,
-                            qty: item.quantity,
-                            price: item.price
-                        }))
-                    }
-                },
-                include: {
-                    orderItems: true
+        // Create order (stock already deducted when items were added to cart)
+        const order = await prisma.order.create({
+            data: {
+                customerId,
+                totalAmt,
+                status: 'PROCESSING',
+                orderItems: {
+                    create: items.map(item => ({
+                        foodId: item.id,
+                        qty: item.quantity,
+                        price: item.price
+                    }))
                 }
-            });
-
-            return newOrder;
+            },
+            include: {
+                orderItems: true
+            }
         });
 
         res.status(201).json(order);
@@ -79,7 +60,8 @@ export const getUserOrders = async (req, res) => {
                     include: {
                         food: true
                     }
-                }
+                },
+                token: true
             },
             orderBy: { orderDate: 'desc' }
         });
@@ -164,6 +146,20 @@ export const updateOrderStatus = async (req, res) => {
                 }
             }
 
+            // If completing, mark the associated token as COLLECTED
+            if (status === 'COMPLETED') {
+                // First, try to update the token if it exists
+                try {
+                    await tx.token.update({
+                        where: { orderId: parseInt(id) },
+                        data: { status: 'COLLECTED' }
+                    });
+                } catch (tokenError) {
+                    // Token might not exist yet, which is fine
+                    console.log(`Token not found for order ${id}, skipping token update`);
+                }
+            }
+
             // Update order status
             return await tx.order.update({
                 where: { id: parseInt(id) },
@@ -174,7 +170,8 @@ export const updateOrderStatus = async (req, res) => {
                     },
                     customer: {
                         select: { id: true, name: true, email: true }
-                    }
+                    },
+                    token: true
                 }
             });
         });
@@ -206,7 +203,8 @@ export const getAllOrders = async (req, res) => {
                         name: true,
                         email: true
                     }
-                }
+                },
+                token: true
             },
             orderBy: { orderDate: 'desc' }
         });

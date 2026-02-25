@@ -201,6 +201,9 @@ function TokensContent() {
             }
         };
         fetchTokens();
+        // Auto-refresh every 30s to reflect status changes made by admin
+        const interval = setInterval(fetchTokens, 30000);
+        return () => clearInterval(interval);
     }, []);
 
     if (loading) {
@@ -347,7 +350,9 @@ function TokensContent() {
                         {/* Ticket footer */}
                         <div className="bg-gray-50 px-5 py-3 text-center border-t border-dashed border-gray-200">
                             <p className="text-xs text-gray-500 font-medium">
-                                🎫 Show this token at the counter to collect your order
+                                {selectedToken.status === 'COLLECTED'
+                                    ? '✅ Order has been collected'
+                                    : '🎫 Show this token at the counter to collect your order'}
                             </p>
                         </div>
 

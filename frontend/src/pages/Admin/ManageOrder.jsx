@@ -16,6 +16,12 @@ export default function ManageOrder() {
         INCART: { label: 'In Cart', classes: 'bg-blue-100 text-blue-700' },
     };
 
+    const tokenStatusConfig = {
+        PREPARING: { label: 'Preparing', classes: 'bg-yellow-100 text-yellow-700' },
+        READY: { label: 'Ready', classes: 'bg-blue-100 text-blue-700' },
+        COLLECTED: { label: 'Collected', classes: 'bg-gray-100 text-gray-700' },
+    };
+
     const fetchOrders = async () => {
         try {
             setLoading(true);
@@ -38,7 +44,7 @@ export default function ManageOrder() {
         try {
             const response = await api.patch(`/orders/${orderId}/status`, { status: newStatus });
             setOrders(prev =>
-                prev.map(o => o.id === orderId ? { ...o, status: response.data.status } : o)
+                prev.map(o => o.id === orderId ? { ...o, status: response.data.status, token: response.data.token } : o)
             );
         } catch (err) {
             console.error('Failed to update status:', err);
@@ -112,6 +118,8 @@ export default function ManageOrder() {
                                     <th className="text-left px-5 py-3 font-semibold">Items</th>
                                     <th className="text-left px-5 py-3 font-semibold">Total</th>
                                     <th className="text-left px-5 py-3 font-semibold">Status</th>
+                                    <th className="text-left px-5 py-3 font-semibold">Token #</th>
+                                    <th className="text-left px-5 py-3 font-semibold">Token Status</th>
                                     <th className="text-left px-5 py-3 font-semibold">Actions</th>
                                     <th className="text-left px-5 py-3 font-semibold">Details</th>
                                 </tr>
@@ -119,6 +127,7 @@ export default function ManageOrder() {
                             <tbody className="divide-y divide-gray-100">
                                 {filteredOrders.map(order => {
                                     const cfg = statusConfig[order.status] || { label: order.status, classes: 'bg-gray-100 text-gray-700' };
+                                    const tokenCfg = order.token ? tokenStatusConfig[order.token.status] : null;
                                     const isExpanded = expandedOrder === order.id;
                                     const isUpdating = updatingId === order.id;
                                     const canComplete = order.status === 'PROCESSING';
@@ -144,6 +153,18 @@ export default function ManageOrder() {
                                                     <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${cfg.classes}`}>
                                                         {cfg.label}
                                                     </span>
+                                                </td>
+                                                <td className="px-5 py-3 font-mono font-semibold text-gray-700">
+                                                    {order.token ? `#${String(order.token.tokenNumber).padStart(4, '0')}` : '—'}
+                                                </td>
+                                                <td className="px-5 py-3">
+                                                    {order.token && tokenCfg ? (
+                                                        <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${tokenCfg.classes}`}>
+                                                            {tokenCfg.label}
+                                                        </span>
+                                                    ) : (
+                                                        <span className="text-xs text-gray-400">—</span>
+                                                    )}
                                                 </td>
                                                 <td className="px-5 py-3">
                                                     <div className="flex gap-2">
@@ -190,7 +211,7 @@ export default function ManageOrder() {
                                             {/* Expanded items */}
                                             {isExpanded && (
                                                 <tr key={`${order.id}-expanded`} className="bg-indigo-50/40">
-                                                    <td colSpan={8} className="px-8 py-4">
+                                                    <td colSpan={10} className="px-8 py-4">
                                                         <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Items Ordered</p>
                                                         <table className="w-full text-sm">
                                                             <thead>
