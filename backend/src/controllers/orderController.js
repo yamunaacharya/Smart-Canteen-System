@@ -9,21 +9,18 @@ export const createOrder = async (req, res) => {
             return res.status(400).json({ error: 'Items are required' });
         }
 
-        // Validate stock availability for all items
+
         for (const item of items) {
             const food = await prisma.foodItem.findUnique({ where: { id: item.id } });
             if (!food) {
                 return res.status(400).json({ error: `Item not found: ${item.id}` });
             }
-            if (food.a_status === 'OUT_OF_STOCK' || food.qty < item.quantity) {
-                return res.status(400).json({ error: `${food.name} is out of stock or insufficient quantity` });
-            }
         }
 
-        // Calculate total amount
+        
         const totalAmt = items.reduce((total, item) => total + (item.price * item.quantity), 0);
 
-        // Create order (stock already deducted when items were added to cart)
+       
         const order = await prisma.order.create({
             data: {
                 customerId,
@@ -93,7 +90,7 @@ export const getOrderById = async (req, res) => {
             return res.status(404).json({ error: 'Order not found' });
         }
 
-        // Check if user owns this order
+       
         if (order.customerId !== customerId) {
             return res.status(403).json({ error: 'Access denied' });
         }
@@ -120,14 +117,14 @@ export const updateOrderStatus = async (req, res) => {
         }
 
         const order = await prisma.$transaction(async (tx) => {
-            // If cancelling, restore stock for each item
+            
             if (status === 'CANCELLED') {
                 const existingOrder = await tx.order.findUnique({
                     where: { id: parseInt(id) },
                     include: { orderItems: true }
                 });
 
-                // Only restore stock if not already cancelled
+                
                 if (existingOrder && existingOrder.status !== 'CANCELLED') {
                     for (const item of existingOrder.orderItems) {
                         const food = await tx.foodItem.findUnique({ where: { id: item.foodId } });
@@ -137,30 +134,41 @@ export const updateOrderStatus = async (req, res) => {
                                 where: { id: item.foodId },
                                 data: {
                                     qty: restoredQty,
-                                    // Flip back to AVAILABLE if it was out of stock
+                                    
                                     a_status: food.a_status === 'OUT_OF_STOCK' ? 'AVAILABLE' : food.a_status
                                 }
                             });
                         }
                     }
                 }
+
+               
+                try {
+                    await tx.token.update({
+                        where: { orderId: parseInt(id) },
+                        data: { status: 'CANCELLED' }
+                    });
+                } catch (tokenError) {
+                    
+                    console.log(`Token not found for order ${id}, skipping token update`);
+                }
             }
 
-            // If completing, mark the associated token as COLLECTED
+            
             if (status === 'COMPLETED') {
-                // First, try to update the token if it exists
+               
                 try {
                     await tx.token.update({
                         where: { orderId: parseInt(id) },
                         data: { status: 'COLLECTED' }
                     });
                 } catch (tokenError) {
-                    // Token might not exist yet, which is fine
+                    
                     console.log(`Token not found for order ${id}, skipping token update`);
                 }
             }
 
-            // Update order status
+            
             return await tx.order.update({
                 where: { id: parseInt(id) },
                 data: { status },
@@ -185,7 +193,7 @@ export const updateOrderStatus = async (req, res) => {
 
 export const getAllOrders = async (req, res) => {
     try {
-        // Check if user is admin
+        
         if (req.user.role !== 'ADMIN') {
             return res.status(403).json({ error: 'Access denied: Admins only' });
         }

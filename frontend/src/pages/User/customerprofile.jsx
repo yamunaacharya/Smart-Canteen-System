@@ -28,7 +28,7 @@ export default function CustomerProfile() {
         }
     }, [user, navigate]);
 
-    // When the user clicks a different sidebar tab, go back to the dashboard with that tab
+    
     useEffect(() => {
         if (activeTab !== 'profile') {
             navigate('/customer/dashboard', { state: { tab: activeTab } });
@@ -85,19 +85,19 @@ export default function CustomerProfile() {
 
     return (
         <div className="flex min-h-screen bg-gray-100">
-            {/* Shared sidebar — Profile tab highlighted */}
+          
             <CustomerSidebar activeTab={activeTab} setActiveTab={setActiveTab} />
 
             {/* Main Content */}
             <div className="ml-64 flex-1">
-                {/* Top Header */}
+                
                 <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-10">
                     <div className="px-8 py-4 flex justify-between items-center">
                         <div>
                             <h2 className="text-2xl font-semibold text-gray-800">My Profile</h2>
                         </div>
                         <div className="flex items-center space-x-4">
-                            {/* User Dropdown */}
+                            
                             <div className="relative">
                                 <button
                                     onClick={() => setIsDropdownOpen(!isDropdownOpen)}
@@ -135,10 +135,10 @@ export default function CustomerProfile() {
                     </div>
                 </header>
 
-                {/* Profile Content */}
+                
                 <main className="p-8">
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        {/* Avatar Card */}
+                        
                         <div className="lg:col-span-1">
                             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                                 <div className="flex flex-col items-center text-center">
@@ -157,9 +157,9 @@ export default function CustomerProfile() {
                             </div>
                         </div>
 
-                        {/* Forms */}
+                        
                         <div className="lg:col-span-2 space-y-6">
-                            {/* Personal Information */}
+                            
                             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                                 <div className="flex items-center justify-between mb-6">
                                     <h3 className="text-lg font-semibold text-gray-900">Personal Information</h3>

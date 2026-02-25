@@ -18,6 +18,13 @@ export default function KhaltiReturn() {
     const [receipt, setReceipt] = useState(null);
     const [error, setError] = useState(null);
 
+    const tokenStatusColors = {
+        PREPARING: 'text-yellow-600',
+        READY: 'text-blue-600',
+        COLLECTED: 'text-green-600',
+        CANCELLED: 'text-red-600'
+    };
+
     useEffect(() => {
         const verifyPayment = async () => {
             const pidx = searchParams.get('pidx');
@@ -133,7 +140,7 @@ export default function KhaltiReturn() {
                                     <div className="text-center">
                                         <p className="text-sm text-gray-600 mb-2">Your Token Number</p>
                                         <p className="text-4xl font-bold text-green-600 mb-2">{receipt.token.tokenNumber}</p>
-                                        <p className="text-sm text-gray-600">Status: <span className="font-semibold text-yellow-600">{receipt.token.status}</span></p>
+                                        <p className="text-sm text-gray-600">Status: <span className={`font-semibold ${tokenStatusColors[receipt.token.status] || 'text-gray-600'}`}>{receipt.token.status}</span></p>
                                     </div>
                                 </div>
 

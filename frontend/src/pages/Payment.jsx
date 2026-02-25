@@ -22,32 +22,33 @@ export default function Payment() {
     const statusColors = {
         PREPARING: 'bg-yellow-100 text-yellow-700',
         READY: 'bg-green-100 text-green-700',
-        COLLECTED: 'bg-gray-100 text-gray-500'
+        COLLECTED: 'bg-gray-100 text-gray-500',
+        CANCELLED: 'bg-red-100 text-red-700'
     };
 
-    // Handle cash payment
+    
     const handleCashPayment = async () => {
         setStep('processing');
         setError(null);
         try {
             const response = await api.post('/payments/cash', { orderId });
-            clearCart(); // Clear cart only after successful cash payment
+            clearCart(); 
             setReceipt(response.data);
             setStep('cash-success');
         } catch (err) {
             console.error('Payment error:', err);
             setError(err?.response?.data?.error || 'Payment failed. Please try again.');
             setStep('choose');
-            // Note: Cart items are preserved on payment failure
+            
         }
     };
 
-    // Handle khalti - redirect to khalti payment flow
+   
     const handleKhaltiPayment = () => {
         navigate('/khalti-payment', { state: { orderId, total } });
     };
 
-    // If no order data, redirect back
+   
     if (!orderId) {
         return (
             <div className="min-h-screen flex flex-col">
@@ -75,14 +76,14 @@ export default function Payment() {
                 <div className="pt-24 pb-12">
                     <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
 
-                        {/* Error notification */}
+                        
                         {error && (
                             <div className="mb-6 px-4 py-3 rounded-lg bg-red-500 text-white shadow-lg">
                                 {error}
                             </div>
                         )}
 
-                        {/* STEP 1: Choose Payment Method */}
+                       
                         {step === 'choose' && (
                             <div>
                                 <button
@@ -99,7 +100,7 @@ export default function Payment() {
                                 </div>
 
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                                    {/* Cash Option */}
+
                                     <button
                                         onClick={handleCashPayment}
                                         className="group bg-white rounded-2xl shadow-md hover:shadow-xl p-8 transition-all duration-300 border-2 border-transparent hover:border-green-400 text-left"
@@ -111,7 +112,6 @@ export default function Payment() {
                                         <p className="text-gray-500 text-sm">Pay at the counter when you collect your order</p>
                                     </button>
 
-                                    {/* Khalti Option */}
                                     <button
                                         onClick={handleKhaltiPayment}
                                         className="group bg-white rounded-2xl shadow-md hover:shadow-xl p-8 transition-all duration-300 border-2 border-transparent hover:border-purple-400 text-left"
@@ -126,7 +126,6 @@ export default function Payment() {
                             </div>
                         )}
 
-                        {/* PROCESSING */}
                         {step === 'processing' && (
                             <div className="text-center py-20">
                                 <div className="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-6"></div>
@@ -134,10 +133,10 @@ export default function Payment() {
                             </div>
                         )}
 
-                        {/* STEP 2: Cash Success — Receipt/Ticket */}
+                       
                         {step === 'cash-success' && receipt && (
                             <div>
-                                {/* Success header */}
+                              
                                 <div className="text-center mb-8">
                                     <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                                         <CheckCircle className="w-12 h-12 text-green-500" />
@@ -146,9 +145,9 @@ export default function Payment() {
                                     <p className="text-gray-500">Your order has been placed</p>
                                 </div>
 
-                                {/* Receipt Ticket */}
+                              
                                 <div className="bg-white rounded-xl shadow-lg overflow-hidden max-w-sm mx-auto">
-                                    {/* Ticket header */}
+                                    
                                     <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-5 py-4 text-white text-center">
                                         <Receipt className="w-6 h-6 mx-auto mb-1 opacity-80" />
                                         <h2 className="text-sm font-bold tracking-wide">ORDER RECEIPT</h2>
@@ -158,9 +157,9 @@ export default function Payment() {
                                         </div>
                                     </div>
 
-                                    {/* Ticket body */}
+                                   
                                     <div className="px-5 py-4 space-y-3">
-                                        {/* Customer info */}
+                                       
                                         <div className="flex items-center gap-2 pb-3 border-b border-dashed border-gray-200">
                                             <User className="w-4 h-4 text-gray-400" />
                                             <div>
@@ -170,7 +169,7 @@ export default function Payment() {
                                             </div>
                                         </div>
 
-                                        {/* Order ID & Date */}
+                                       
                                         <div className="flex justify-between pb-3 border-b border-dashed border-gray-200">
                                             <div className="flex items-center gap-1.5">
                                                 <Hash className="w-3.5 h-3.5 text-gray-400" />
@@ -188,7 +187,7 @@ export default function Payment() {
                                             </div>
                                         </div>
 
-                                        {/* Items */}
+                                       
                                         <div className="pb-3 border-b border-dashed border-gray-200">
                                             <p className="text-[10px] text-gray-400 uppercase tracking-wide mb-2">Items Ordered</p>
                                             <div className="space-y-1.5">
@@ -204,7 +203,7 @@ export default function Payment() {
                                             </div>
                                         </div>
 
-                                        {/* Total */}
+                                        
                                         <div className="flex justify-between items-center pb-3 border-b border-dashed border-gray-200">
                                             <p className="text-base font-bold text-gray-800">Total</p>
                                             <p className="text-lg font-extrabold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
@@ -212,7 +211,7 @@ export default function Payment() {
                                             </p>
                                         </div>
 
-                                        {/* Token Status */}
+                                       
                                         <div className="flex items-center justify-between">
                                             <p className="text-[10px] text-gray-400 uppercase tracking-wide">Token Status</p>
                                             <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold ${statusColors[receipt.token.status] || 'bg-gray-100 text-gray-700'}`}>
@@ -221,7 +220,7 @@ export default function Payment() {
                                         </div>
                                     </div>
 
-                                    {/* Ticket footer */}
+                                    
                                     <div className="bg-gray-50 px-5 py-3 text-center border-t border-dashed border-gray-200">
                                         <p className="text-xs text-gray-500 font-medium">
                                             🎫 Show this token at the counter to collect your order
@@ -229,7 +228,6 @@ export default function Payment() {
                                     </div>
                                 </div>
 
-                                {/* Action button */}
                                 <div className="text-center mt-8">
                                     <button
                                         onClick={() => navigate('/menu')}

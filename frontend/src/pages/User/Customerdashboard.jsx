@@ -186,7 +186,8 @@ function TokensContent() {
     const tokenStatusColors = {
         PREPARING: 'bg-yellow-100 text-yellow-700',
         READY: 'bg-green-100 text-green-700',
-        COLLECTED: 'bg-gray-100 text-gray-500'
+        COLLECTED: 'bg-gray-100 text-gray-500',
+        CANCELLED: 'bg-red-100 text-red-700'
     };
 
     useEffect(() => {
@@ -352,6 +353,8 @@ function TokensContent() {
                             <p className="text-xs text-gray-500 font-medium">
                                 {selectedToken.status === 'COLLECTED'
                                     ? '✅ Order has been collected'
+                                    : selectedToken.status === 'CANCELLED'
+                                    ? '❌ This order has been cancelled'
                                     : '🎫 Show this token at the counter to collect your order'}
                             </p>
                         </div>

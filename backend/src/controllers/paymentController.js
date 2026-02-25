@@ -70,6 +70,8 @@ export const processCashPayment = async (req, res) => {
             return res.status(400).json({ error: 'Order ID is required' });
         }
 
+        console.log(`Processing cash payment for order ${orderId}, user ${userId}`);
+
         // Fetch the order with items and food details
         const order = await prisma.order.findUnique({
             where: { id: parseInt(orderId) },
@@ -98,6 +100,8 @@ export const processCashPayment = async (req, res) => {
             return res.status(403).json({ error: 'Access denied' });
         }
 
+        console.log(`Found order ${orderId}. Creating payment and token...`);
+
         // Use a transaction to create payment, token, and update order status
         const result = await prisma.$transaction(async (tx) => {
             // Create Payment record
@@ -108,6 +112,7 @@ export const processCashPayment = async (req, res) => {
                     orderId: order.id
                 }
             });
+            console.log(`Created payment ${payment.id}`);
 
             // Generate token number (max existing + 1)
             const lastToken = await tx.token.findFirst({
@@ -123,11 +128,14 @@ export const processCashPayment = async (req, res) => {
                     orderId: order.id
                 }
             });
+            console.log(`Created token ${token.id} with number ${token.tokenNumber}`);
 
             // Order stays in PROCESSING — only admin can set COMPLETED
 
             return { payment, token };
         });
+
+        console.log(`Successfully processed cash payment for order ${orderId}`);
 
         // Return full receipt data
         res.status(201).json({
@@ -157,6 +165,8 @@ export const processCashPayment = async (req, res) => {
         });
     } catch (error) {
         console.error('Error processing cash payment:', error);
+        console.error('Error details:', error.message);
+        console.error('Error code:', error.code);
         res.status(500).json({ error: 'Failed to process payment', message: error.message });
     }
 };

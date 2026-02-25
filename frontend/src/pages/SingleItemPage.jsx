@@ -115,7 +115,6 @@ export default function SingleItemPage() {
             <Navbar />
 
             <div className="flex-1 bg-gradient-to-br from-blue-50 via-white to-purple-50 pt-24 pb-8">
-                {/* Notification */}
                 {notification && (
                     <div className="fixed top-20 right-4 bg-green-500 text-white px-4 py-3 rounded-lg shadow-lg animate-pulse z-50">
                         {notification}
@@ -123,7 +122,7 @@ export default function SingleItemPage() {
                 )}
 
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    {/* Back Button */}
+
                     <button
                         onClick={() => navigate('/menu')}
                         className="flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium mb-8 transition-colors"
@@ -132,9 +131,9 @@ export default function SingleItemPage() {
                         Back to Menu
                     </button>
 
-                    {/* Product Details */}
+                   
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-                        {/* Image Section */}
+                       
                         <div className="flex items-center justify-center">
                             <div className="relative w-full bg-white rounded-xl shadow-lg overflow-hidden" style={{ maxWidth: '500px', aspectRatio: '1' }}>
                                 <img
@@ -142,16 +141,16 @@ export default function SingleItemPage() {
                                     alt={item.name}
                                     className="w-full h-full object-cover"
                                 />
-                                {/* Category Badge */}
+                                
                                 <div className="absolute top-4 right-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-full font-semibold">
                                     {item.category.charAt(0).toUpperCase() + item.category.slice(1)}
                                 </div>
                             </div>
                         </div>
 
-                        {/* Details Section */}
+                        
                         <div className="flex flex-col justify-center space-y-6">
-                            {/* Product Name */}
+                            
                             <div>
                                 <h1 className="text-4xl font-bold text-gray-900 mb-2">
                                     {item.name}
@@ -159,14 +158,12 @@ export default function SingleItemPage() {
                             </div>
 
 
-                            {/* Price */}
                             <div className="py-4 border-y border-gray-200">
                                 <div className="text-4xl font-semibold text-black">
                                     Rs. {item.price}
                                 </div>
                             </div>
 
-                            {/* Description */}
                             <div>
                                 <h2 className="text-lg font-bold text-gray-900 mb-3">
                                   Description
@@ -176,7 +173,7 @@ export default function SingleItemPage() {
                                 </p>
                             </div>
 
-                            {/* Additional Details */}
+                           
                             <div className="grid grid-cols-2 gap-4 py-4 bg-gray-50 rounded-lg p-4">
                                 <div>
                                     <p className="text-gray-600 text-sm font-medium">Category</p>
@@ -190,7 +187,6 @@ export default function SingleItemPage() {
                                 </div>
                             </div>
 
-                            {/* Quantity Selector */}
                             <div className="flex items-center gap-4">
                                 <span className="text-gray-700 font-medium">Quantity:</span>
                                 <div className="flex items-center border border-gray-300 rounded-lg">
@@ -216,7 +212,6 @@ export default function SingleItemPage() {
                                 </div>
                             </div>
 
-                            {/* Add to Cart Button */}
                             <button
                                 onClick={handleAddToCart}
                                 className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:shadow-lg text-white px-8 py-4 rounded-lg flex items-center justify-center gap-3 transition-all font-bold text-lg shadow-md transform hover:-translate-y-0.5"

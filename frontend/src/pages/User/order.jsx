@@ -18,6 +18,7 @@ export default function OrdersContent() {
         PREPARING: { label: 'Preparing', classes: 'bg-yellow-100 text-yellow-700' },
         READY: { label: 'Ready', classes: 'bg-blue-100 text-blue-700' },
         COLLECTED: { label: 'Collected', classes: 'bg-gray-100 text-gray-700' },
+        CANCELLED: { label: 'Cancelled', classes: 'bg-red-100 text-red-700' },
     };
 
     const fetchOrders = async () => {
