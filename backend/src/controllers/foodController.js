@@ -19,7 +19,7 @@ export const getAllFoodItems = async (req, res) => {
             where.category = category;
         }
 
-        const foods = await prisma.foodItem.findMany({
+        const foods = await prisma.fooditem.findMany({
             where,
             orderBy: { createdAt: 'desc' }
         });
@@ -35,7 +35,7 @@ export const getFoodItemById = async (req, res) => {
     try {
         const { id } = req.params;
 
-        const food = await prisma.foodItem.findUnique({
+        const food = await prisma.fooditem.findUnique({
             where: { id: parseInt(id) }
         });
 
@@ -77,7 +77,7 @@ export const createFoodItem = async (req, res) => {
             imageUrl = `/uploads/${fileName}`;
         }
 
-        const newFood = await prisma.foodItem.create({
+        const newFood = await prisma.fooditem.create({
             data: {
                 name,
                 price: parseFloat(price),
@@ -106,7 +106,7 @@ export const updateFoodItem = async (req, res) => {
             return res.status(403).json({ error: 'Access denied: Admins only' });
         }
 
-        const existingItem = await prisma.foodItem.findUnique({
+        const existingItem = await prisma.fooditem.findUnique({
             where: { id: parseInt(id) }
         });
 
@@ -132,7 +132,7 @@ export const updateFoodItem = async (req, res) => {
             imageUrl = `/uploads/${fileName}`;
         }
 
-        const updatedFood = await prisma.foodItem.update({
+        const updatedFood = await prisma.fooditem.update({
             where: { id: parseInt(id) },
             data: {
                 ...(name && { name }),
@@ -160,7 +160,7 @@ export const deleteFoodItem = async (req, res) => {
             return res.status(403).json({ error: 'Access denied: Admins only' });
         }
 
-        const existingItem = await prisma.foodItem.findUnique({
+        const existingItem = await prisma.fooditem.findUnique({
             where: { id: parseInt(id) }
         });
 
@@ -176,7 +176,7 @@ export const deleteFoodItem = async (req, res) => {
             }
         }
 
-        await prisma.foodItem.delete({
+        await prisma.fooditem.delete({
             where: { id: parseInt(id) }
         });
 
@@ -193,7 +193,7 @@ export const addToCartStock = async (req, res) => {
         const { id } = req.params;
         const { quantity = 1 } = req.body;
 
-        const food = await prisma.foodItem.findUnique({
+        const food = await prisma.fooditem.findUnique({
             where: { id: parseInt(id) }
         });
 
@@ -207,7 +207,7 @@ export const addToCartStock = async (req, res) => {
 
         const newQty = food.qty - quantity;
 
-        const updatedFood = await prisma.foodItem.update({
+        const updatedFood = await prisma.fooditem.update({
             where: { id: parseInt(id) },
             data: {
                 qty: newQty,
@@ -228,7 +228,7 @@ export const removeFromCartStock = async (req, res) => {
         const { id } = req.params;
         const { quantity = 1 } = req.body;
 
-        const food = await prisma.foodItem.findUnique({
+        const food = await prisma.fooditem.findUnique({
             where: { id: parseInt(id) }
         });
 
@@ -238,7 +238,7 @@ export const removeFromCartStock = async (req, res) => {
 
         const newQty = food.qty + quantity;
 
-        const updatedFood = await prisma.foodItem.update({
+        const updatedFood = await prisma.fooditem.update({
             where: { id: parseInt(id) },
             data: {
                 qty: newQty,

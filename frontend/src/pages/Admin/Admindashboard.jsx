@@ -7,7 +7,7 @@ import ManageCustomer from './ManageCustomer';
 import ManageOrder from './ManageOrder';
 
 export default function AdminDashboard() {
-    const { user, logout } = useAuth();
+    const { user, loading, logout } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
     const [activeTab, setActiveTab] = useState('dashboard');
@@ -19,8 +19,12 @@ export default function AdminDashboard() {
     });
 
     useEffect(() => {
-        if (user && user.role !== 'ADMIN') {
-            navigate('/customer/dashboard');
+        // If still loading auth state, wait
+        if (loading) return;
+
+        // If no user or not admin, redirect
+        if (!user || user.role !== 'ADMIN') {
+            navigate('/login');
             return;
         }
 
@@ -40,10 +44,8 @@ export default function AdminDashboard() {
             }
         };
 
-        if (user && user.role === 'ADMIN') {
-            fetchStats();
-        }
-    }, [user, navigate]);
+        fetchStats();
+    }, [user, loading, navigate]);
 
 
     useEffect(() => {
@@ -57,6 +59,23 @@ export default function AdminDashboard() {
         logout();
         navigate('/login');
     };
+
+    // Show loading screen while auth is being verified
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center min-h-screen bg-gray-100">
+                <div className="text-center">
+                    <div className="w-12 h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mx-auto mb-4"></div>
+                    <p className="text-gray-500 font-medium">Loading admin dashboard...</p>
+                </div>
+            </div>
+        );
+    }
+
+    // Redirect if not admin
+    if (!user || user.role !== 'ADMIN') {
+        return null;
+    }
 
     return (
         <div className="flex min-h-screen bg-gray-100">
@@ -250,10 +269,10 @@ function DashboardContent({ stats }) {
                                     <tr key={order.id} className={`hover:bg-gray-50 transition-colors ${updatingId === order.id ? 'opacity-50' : ''}`}>
                                         <td className="px-6 py-3 font-mono font-semibold text-gray-700">#{order.id}</td>
                                         <td className="px-6 py-3">
-                                            <div className="font-medium text-gray-800">{order.customer?.name || '—'}</div>
-                                            <div className="text-xs text-gray-400">{order.customer?.email}</div>
+                                            <div className="font-medium text-gray-800">{order.user?.name || '—'}</div>
+                                            <div className="text-xs text-gray-400">{order.user?.email}</div>
                                         </td>
-                                        <td className="px-6 py-3 text-gray-600">{order.orderItems.length} item{order.orderItems.length !== 1 ? 's' : ''}</td>
+                                        <td className="px-6 py-3 text-gray-600">{order.orderitem.length} item{order.orderitem.length !== 1 ? 's' : ''}</td>
                                         <td className="px-6 py-3 font-semibold text-gray-800">Rs. {order.totalAmt}</td>
                                         <td className="px-6 py-3 text-gray-500 whitespace-nowrap">
                                             {new Date(order.orderDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}

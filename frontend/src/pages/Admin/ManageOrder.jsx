@@ -139,8 +139,8 @@ export default function ManageOrder() {
                                             <tr key={order.id} className={`hover:bg-gray-50 transition-colors ${isUpdating ? 'opacity-50' : ''}`}>
                                                 <td className="px-5 py-3 font-mono font-semibold text-gray-700">#{order.id}</td>
                                                 <td className="px-5 py-3">
-                                                    <div className="font-medium text-gray-800">{order.customer?.name || '—'}</div>
-                                                    <div className="text-xs text-gray-400">{order.customer?.email}</div>
+                                                    <div className="font-medium text-gray-800">{order.user?.name || '—'}</div>
+                                                    <div className="text-xs text-gray-400">{order.user?.email}</div>
                                                 </td>
                                                 <td className="px-5 py-3 text-gray-500 whitespace-nowrap">
                                                     {new Date(order.orderDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
@@ -148,7 +148,7 @@ export default function ManageOrder() {
                                                         {new Date(order.orderDate).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
                                                     </div>
                                                 </td>
-                                                <td className="px-5 py-3 text-gray-600">{order.orderItems.length} item{order.orderItems.length !== 1 ? 's' : ''}</td>
+                                                <td className="px-5 py-3 text-gray-600">{order.orderitem.length} item{order.orderitem.length !== 1 ? 's' : ''}</td>
                                                 <td className="px-5 py-3 font-semibold text-gray-800">Rs. {order.totalAmt}</td>
                                                 <td className="px-5 py-3">
                                                     <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${cfg.classes}`}>
@@ -224,9 +224,9 @@ export default function ManageOrder() {
                                                                 </tr>
                                                             </thead>
                                                             <tbody className="divide-y divide-indigo-100">
-                                                                {order.orderItems.map((item, idx) => (
+                                                                {order.orderitem.map((item, idx) => (
                                                                     <tr key={idx}>
-                                                                        <td className="py-1.5 text-gray-700 font-medium">{item.food?.name || 'Item'}</td>
+                                                                        <td className="py-1.5 text-gray-700 font-medium">{item.fooditem?.name || 'Item'}</td>
                                                                         <td className="py-1.5 text-center text-gray-500">{item.qty}</td>
                                                                         <td className="py-1.5 text-right text-gray-500">Rs. {item.price}</td>
                                                                         <td className="py-1.5 text-right font-semibold text-gray-800">Rs. {item.qty * item.price}</td>

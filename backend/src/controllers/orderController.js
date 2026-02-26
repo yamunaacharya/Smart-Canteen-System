@@ -11,7 +11,7 @@ export const createOrder = async (req, res) => {
 
 
         for (const item of items) {
-            const food = await prisma.foodItem.findUnique({ where: { id: item.id } });
+            const food = await prisma.fooditem.findUnique({ where: { id: item.id } });
             if (!food) {
                 return res.status(400).json({ error: `Item not found: ${item.id}` });
             }
@@ -26,7 +26,7 @@ export const createOrder = async (req, res) => {
                 customerId,
                 totalAmt,
                 status: 'PROCESSING',
-                orderItems: {
+                orderitem: {
                     create: items.map(item => ({
                         foodId: item.id,
                         qty: item.quantity,
@@ -35,7 +35,7 @@ export const createOrder = async (req, res) => {
                 }
             },
             include: {
-                orderItems: true
+                orderitem: true
             }
         });
 
@@ -53,9 +53,9 @@ export const getUserOrders = async (req, res) => {
         const orders = await prisma.order.findMany({
             where: { customerId },
             include: {
-                orderItems: {
+                orderitem: {
                     include: {
-                        food: true
+                        fooditem: true
                     }
                 },
                 token: true
@@ -78,9 +78,9 @@ export const getOrderById = async (req, res) => {
         const order = await prisma.order.findUnique({
             where: { id: parseInt(id) },
             include: {
-                orderItems: {
+                orderitem: {
                     include: {
-                        food: true
+                        fooditem: true
                     }
                 }
             }
@@ -121,16 +121,16 @@ export const updateOrderStatus = async (req, res) => {
             if (status === 'CANCELLED') {
                 const existingOrder = await tx.order.findUnique({
                     where: { id: parseInt(id) },
-                    include: { orderItems: true }
+                    include: { orderitem: true }
                 });
 
                 
                 if (existingOrder && existingOrder.status !== 'CANCELLED') {
-                    for (const item of existingOrder.orderItems) {
-                        const food = await tx.foodItem.findUnique({ where: { id: item.foodId } });
+                    for (const item of existingOrder.orderitem) {
+                        const food = await tx.fooditem.findUnique({ where: { id: item.foodId } });
                         if (food) {
                             const restoredQty = food.qty + item.qty;
-                            await tx.foodItem.update({
+                            await tx.fooditem.update({
                                 where: { id: item.foodId },
                                 data: {
                                     qty: restoredQty,
@@ -173,10 +173,10 @@ export const updateOrderStatus = async (req, res) => {
                 where: { id: parseInt(id) },
                 data: { status },
                 include: {
-                    orderItems: {
-                        include: { food: true }
+                    orderitem: {
+                        include: { fooditem: true }
                     },
-                    customer: {
+                    user: {
                         select: { id: true, name: true, email: true }
                     },
                     token: true
@@ -200,12 +200,12 @@ export const getAllOrders = async (req, res) => {
 
         const orders = await prisma.order.findMany({
             include: {
-                orderItems: {
+                orderitem: {
                     include: {
-                        food: true
+                        fooditem: true
                     }
                 },
-                customer: {
+                user: {
                     select: {
                         id: true,
                         name: true,

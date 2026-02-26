@@ -18,12 +18,12 @@ export const getUserTokens = async (req, res) => {
             include: {
                 order: {
                     include: {
-                        customer: {
+                        user: {
                             select: { id: true, name: true, email: true }
                         },
-                        orderItems: {
+                        orderitem: {
                             include: {
-                                food: {
+                                fooditem: {
                                     select: { name: true }
                                 }
                             }
@@ -39,14 +39,14 @@ export const getUserTokens = async (req, res) => {
             tokenNumber: token.tokenNumber,
             status: token.status,
             createdAt: token.createdAt,
-            customer: token.order.customer,
+            customer: token.order.user,
             order: {
                 id: token.order.id,
                 totalAmt: token.order.totalAmt,
                 status: token.order.status,
                 orderDate: token.order.orderDate,
-                items: token.order.orderItems.map(item => ({
-                    name: item.food.name,
+                items: token.order.orderitem.map(item => ({
+                    name: item.fooditem.name,
                     qty: item.qty,
                     price: item.price,
                     subtotal: item.qty * item.price
@@ -76,12 +76,12 @@ export const processCashPayment = async (req, res) => {
         const order = await prisma.order.findUnique({
             where: { id: parseInt(orderId) },
             include: {
-                orderItems: {
+                orderitem: {
                     include: {
-                        food: true
+                        fooditem: true
                     }
                 },
-                customer: {
+                user: {
                     select: {
                         id: true,
                         name: true,
@@ -145,9 +145,9 @@ export const processCashPayment = async (req, res) => {
                 totalAmt: order.totalAmt,
                 status: 'PROCESSING'
             },
-            customer: order.customer,
-            items: order.orderItems.map(item => ({
-                name: item.food.name,
+            customer: order.user,
+            items: order.orderitem.map(item => ({
+                name: item.fooditem.name,
                 qty: item.qty,
                 price: item.price,
                 subtotal: item.qty * item.price
@@ -185,7 +185,7 @@ export const khaltiInitiate = async (req, res) => {
         const order = await prisma.order.findUnique({
             where: { id: parseInt(orderId) },
             include: {
-                customer: {
+                user: {
                     select: {
                         id: true,
                         name: true,
@@ -221,8 +221,8 @@ export const khaltiInitiate = async (req, res) => {
             purchase_order_id: `order-${order.id}`,
             purchase_order_name: `Order #${order.id}`,
             customer_info: {
-                name: order.customer.name || 'Customer',
-                email: order.customer.email,
+                name: order.user.name || 'Customer',
+                email: order.user.email,
                 phone: '9800000001' // Default phone
             }
         };
@@ -282,12 +282,12 @@ export const khaltiVerify = async (req, res) => {
         const order = await prisma.order.findUnique({
             where: { id: parseInt(orderId) },
             include: {
-                orderItems: {
+                orderitem: {
                     include: {
-                        food: true
+                        fooditem: true
                     }
                 },
-                customer: {
+                user: {
                     select: {
                         id: true,
                         name: true,
@@ -368,9 +368,9 @@ export const khaltiVerify = async (req, res) => {
                     totalAmt: order.totalAmt,
                     status: 'PROCESSING'
                 },
-                customer: order.customer,
-                items: order.orderItems.map(item => ({
-                    name: item.food.name,
+                customer: order.user,
+                items: order.orderitem.map(item => ({
+                    name: item.fooditem.name,
                     qty: item.qty,
                     price: item.price,
                     subtotal: item.qty * item.price

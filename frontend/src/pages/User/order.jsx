@@ -122,7 +122,7 @@ export default function OrdersContent() {
                                             </div>
                                         </td>
                                         <td className="px-6 py-4 text-gray-600">
-                                            {order.orderItems.length} item{order.orderItems.length !== 1 ? 's' : ''}
+                                            {order.orderitem.length} item{order.orderitem.length !== 1 ? 's' : ''}
                                         </td>
                                         <td className="px-6 py-4 font-semibold text-gray-800">
                                             Rs. {order.totalAmt}
@@ -172,9 +172,9 @@ export default function OrdersContent() {
                                                         </tr>
                                                     </thead>
                                                     <tbody className="divide-y divide-indigo-100">
-                                                        {order.orderItems.map((item, idx) => (
+                                                        {order.orderitem.map((item, idx) => (
                                                             <tr key={idx}>
-                                                                <td className="py-1.5 text-gray-700 font-medium">{item.food?.name || 'Item'}</td>
+                                                                <td className="py-1.5 text-gray-700 font-medium">{item.fooditem?.name || 'Item'}</td>
                                                                 <td className="py-1.5 text-center text-gray-500">{item.qty}</td>
                                                                 <td className="py-1.5 text-right text-gray-500">Rs. {item.price}</td>
                                                                 <td className="py-1.5 text-right font-semibold text-gray-800">Rs. {item.qty * item.price}</td>

@@ -6,7 +6,7 @@ import api from '../../services/api';
 import OrdersContent from './order';
 
 export default function CustomerDashboard() {
-    const { user, logout } = useAuth();
+    const { user, loading, logout } = useAuth();
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState('dashboard');
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -18,9 +18,12 @@ export default function CustomerDashboard() {
 
 
     useEffect(() => {
-        // Redirect if admin
-        if (user && user.role === 'ADMIN') {
-            navigate('/admin/dashboard');
+        // If still loading, wait
+        if (loading) return;
+
+        // Redirect if admin or not authenticated
+        if (!user || user.role === 'ADMIN') {
+            navigate(user?.role === 'ADMIN' ? '/admin/dashboard' : '/login');
             return;
         }
 
@@ -40,15 +43,30 @@ export default function CustomerDashboard() {
             }
         };
 
-        if (user && user.role === 'CUSTOMER') {
-            fetchStats();
-        }
-    }, [user, navigate]);
+        fetchStats();
+    }, [user, loading, navigate]);
 
     const handleLogout = () => {
         logout();
         navigate('/login');
     };
+
+    // Show loading screen while auth is being verified
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center min-h-screen bg-gray-100">
+                <div className="text-center">
+                    <div className="w-12 h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mx-auto mb-4"></div>
+                    <p className="text-gray-500 font-medium">Loading dashboard...</p>
+                </div>
+            </div>
+        );
+    }
+
+    // Redirect if not customer
+    if (!user || user.role !== 'CUSTOMER') {
+        return null;
+    }
 
     return (
         <div className="flex min-h-screen bg-gray-100">
