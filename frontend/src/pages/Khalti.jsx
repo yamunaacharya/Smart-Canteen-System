@@ -30,6 +30,14 @@ export default function KhaltiPayment() {
                 const response = await api.post('/payments/khalti/initiate', { orderId });
 
                 if (response.data.success) {
+                    // Store paymentId and orderId in localStorage for retrieval on return
+                    localStorage.setItem('khaltiPaymentData', JSON.stringify({
+                        orderId: response.data.data.orderId,
+                        paymentId: response.data.data.paymentId,
+                        timestamp: Date.now()
+                    }));
+                    console.log('Stored Khalti payment data in localStorage');
+                    
                     // Redirect to Khalti's payment page
                     window.location.href = response.data.data.paymentUrl;
                 } else {

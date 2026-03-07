@@ -222,7 +222,6 @@ export const addToCartStock = async (req, res) => {
     }
 };
 
-// Remove item from cart - restore stock quantity
 export const removeFromCartStock = async (req, res) => {
     try {
         const { id } = req.params;

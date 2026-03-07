@@ -157,7 +157,6 @@ export default function OrdersContent() {
                                         </td>
                                     </tr>
 
-                                    {/* Expanded items row */}
                                     {isExpanded && (
                                         <tr key={`${order.id}-expanded`} className="bg-indigo-50/40">
                                             <td colSpan={8} className="px-8 py-4">

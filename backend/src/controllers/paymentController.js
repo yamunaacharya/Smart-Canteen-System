@@ -61,116 +61,6 @@ export const getUserTokens = async (req, res) => {
     }
 };
 
-export const processCashPayment = async (req, res) => {
-    try {
-        const { orderId } = req.body;
-        const userId = req.user.id;
-
-        if (!orderId) {
-            return res.status(400).json({ error: 'Order ID is required' });
-        }
-
-        console.log(`Processing cash payment for order ${orderId}, user ${userId}`);
-
-        // Fetch the order with items and food details
-        const order = await prisma.order.findUnique({
-            where: { id: parseInt(orderId) },
-            include: {
-                orderitem: {
-                    include: {
-                        fooditem: true
-                    }
-                },
-                user: {
-                    select: {
-                        id: true,
-                        name: true,
-                        email: true
-                    }
-                }
-            }
-        });
-
-        if (!order) {
-            return res.status(404).json({ error: 'Order not found' });
-        }
-
-        // Verify the order belongs to this user
-        if (order.customerId !== userId) {
-            return res.status(403).json({ error: 'Access denied' });
-        }
-
-        console.log(`Found order ${orderId}. Creating payment and token...`);
-
-        // Use a transaction to create payment, token, and update order status
-        const result = await prisma.$transaction(async (tx) => {
-            // Create Payment record
-            const payment = await tx.payment.create({
-                data: {
-                    method: 'COD',
-                    status: 'PAID',
-                    orderId: order.id
-                }
-            });
-            console.log(`Created payment ${payment.id}`);
-
-            // Generate token number (max existing + 1)
-            const lastToken = await tx.token.findFirst({
-                orderBy: { tokenNumber: 'desc' }
-            });
-            const tokenNumber = lastToken ? lastToken.tokenNumber + 1 : 1;
-
-            // Create Token record
-            const token = await tx.token.create({
-                data: {
-                    tokenNumber,
-                    status: 'PREPARING',
-                    orderId: order.id
-                }
-            });
-            console.log(`Created token ${token.id} with number ${token.tokenNumber}`);
-
-            // Order stays in PROCESSING — only admin can set COMPLETED
-
-            return { payment, token };
-        });
-
-        console.log(`Successfully processed cash payment for order ${orderId}`);
-
-        // Return full receipt data
-        res.status(201).json({
-            order: {
-                id: order.id,
-                orderDate: order.orderDate,
-                totalAmt: order.totalAmt,
-                status: 'PROCESSING'
-            },
-            customer: order.user,
-            items: order.orderitem.map(item => ({
-                name: item.fooditem.name,
-                qty: item.qty,
-                price: item.price,
-                subtotal: item.qty * item.price
-            })),
-            payment: {
-                id: result.payment.id,
-                method: result.payment.method,
-                status: result.payment.status,
-                payDate: result.payment.payDate
-            },
-            token: {
-                tokenNumber: result.token.tokenNumber,
-                status: result.token.status
-            }
-        });
-    } catch (error) {
-        console.error('Error processing cash payment:', error);
-        console.error('Error details:', error.message);
-        console.error('Error code:', error.code);
-        res.status(500).json({ error: 'Failed to process payment', message: error.message });
-    }
-};
-
 // Khalti Payment - Initiate
 export const khaltiInitiate = async (req, res) => {
     try {
@@ -180,6 +70,8 @@ export const khaltiInitiate = async (req, res) => {
         if (!orderId) {
             return res.status(400).json({ error: 'Order ID is required' });
         }
+
+        console.log(`Initiating Khalti payment for order ${orderId}, user ${userId}`);
 
         // Fetch the order
         const order = await prisma.order.findUnique({
@@ -212,10 +104,11 @@ export const khaltiInitiate = async (req, res) => {
                 orderId: order.id
             }
         });
+        console.log(`Created payment record ${payment.id} for order ${orderId}`);
 
         // Prepare Khalti initiate request
         const khaltiPayload = {
-            return_url: `${WEBSITE_URL}/khalti-return?orderId=${order.id}&paymentId=${payment.id}`,
+            return_url: `${WEBSITE_URL}/khalti-return`,
             website_url: WEBSITE_URL,
             amount: Math.round(order.totalAmt * 100), // Convert NPR to paisa (smallest unit)
             purchase_order_id: `order-${order.id}`,
@@ -226,6 +119,8 @@ export const khaltiInitiate = async (req, res) => {
                 phone: '9800000001' // Default phone
             }
         };
+
+        console.log('Khalti payload:', khaltiPayload);
 
         // Call Khalti API to initiate payment
         const khaltiResponse = await fetch(`${KHALTI_API_URL}/epayment/initiate/`, {
@@ -240,18 +135,11 @@ export const khaltiInitiate = async (req, res) => {
         if (!khaltiResponse.ok) {
             const errorData = await khaltiResponse.text();
             console.error('Khalti initiate failed:', errorData);
-            return res.status(500).json({ error: 'Failed to initiate Khalti payment' });
+            return res.status(500).json({ error: 'Failed to initiate Khalti payment', details: errorData });
         }
 
         const khaltiData = await khaltiResponse.json();
-
-        // Store pidx in payment record
-        await prisma.payment.update({
-            where: { id: payment.id },
-            data: {
-                // Using payDate field to store pidx temporarily (you may want to add pidx field to schema)
-            }
-        });
+        console.log('Khalti response:', khaltiData);
 
         res.json({
             success: true,
@@ -264,7 +152,11 @@ export const khaltiInitiate = async (req, res) => {
         });
     } catch (error) {
         console.error('Error initiating Khalti payment:', error);
-        res.status(500).json({ error: 'Failed to initiate Khalti payment', message: error.message });
+        res.status(500).json({ 
+            error: 'Failed to initiate Khalti payment', 
+            message: error.message,
+            details: error.stack 
+        });
     }
 };
 
@@ -305,8 +197,15 @@ export const khaltiVerify = async (req, res) => {
             return res.status(403).json({ error: 'Access denied' });
         }
 
+        console.log(`Verifying Khalti payment with pidx: ${pidx}, paymentId: ${paymentId}`);
+        console.log(`Using KHALTI_API_URL: ${KHALTI_API_URL}`);
+        console.log(`Using KHALTI_SECRET_KEY: ${KHALTI_SECRET_KEY ? 'Set' : 'NOT SET!'}`);
+
         // Verify payment with Khalti
-        const khaltiVerifyResponse = await fetch(`${KHALTI_API_URL}/epayment/lookup/`, {
+        const khaltiVerifyUrl = `${KHALTI_API_URL}/epayment/lookup/`;
+        console.log(`Making request to: ${khaltiVerifyUrl}`);
+        
+        const khaltiVerifyResponse = await fetch(khaltiVerifyUrl, {
             method: 'POST',
             headers: {
                 'Authorization': `Key ${KHALTI_SECRET_KEY}`,
@@ -315,20 +214,52 @@ export const khaltiVerify = async (req, res) => {
             body: JSON.stringify({ pidx })
         });
 
+        console.log(`Khalti response status: ${khaltiVerifyResponse.status} ${khaltiVerifyResponse.statusText}`);
+
+        let khaltiData;
+        const responseText = await khaltiVerifyResponse.text();
+        console.log(`Khalti raw response: ${responseText}`);
+
         if (!khaltiVerifyResponse.ok) {
-            const errorData = await khaltiVerifyResponse.text();
-            console.error('Khalti verification failed:', errorData);
-            return res.status(500).json({ error: 'Failed to verify payment with Khalti' });
-        }
-
-        const khaltiData = await khaltiVerifyResponse.json();
-
-        // Check if payment is completed
-        if (khaltiData.status !== 'Completed') {
-            return res.status(400).json({ 
-                error: `Payment not completed. Status: ${khaltiData.status}` 
+            console.error('Khalti verification failed with status:', khaltiVerifyResponse.status);
+            console.error('Khalti error response:', responseText);
+            return res.status(500).json({ 
+                success: false,
+                error: `Khalti API Error (${khaltiVerifyResponse.status}): ${responseText}`,
+                details: responseText 
             });
         }
+
+        try {
+            khaltiData = JSON.parse(responseText);
+            console.log('Khalti parsed response:', khaltiData);
+        } catch (parseError) {
+            console.error('Failed to parse Khalti response:', parseError);
+            return res.status(500).json({ 
+                success: false,
+                error: 'Invalid response from Khalti API',
+                details: responseText 
+            });
+        }
+
+        // Check if payment is completed (handle case sensitivity and variations)
+        const paymentStatus = khaltiData.status ? String(khaltiData.status).toLowerCase() : '';
+        console.log(`Khalti payment status: "${khaltiData.status}" (lowercase: "${paymentStatus}")`);
+        
+        // Accept multiple status values that indicate successful payment
+        const successfulStatuses = ['completed', 'complete', 'success', 'paid'];
+        const isPaymentSuccess = successfulStatuses.includes(paymentStatus);
+        
+        if (!isPaymentSuccess) {
+            console.error(`Payment verification failed. Khalti status: "${khaltiData.status}" not in accepted list: ${successfulStatuses.join(', ')}`);
+            return res.status(400).json({ 
+                success: false,
+                error: `Payment not completed. Current status: ${khaltiData.status}`,
+                acceptedStatuses: successfulStatuses
+            });
+        }
+
+        console.log(`Payment verification successful for pidx: ${pidx}`);
 
         // Use transaction to update payment, create token, and mark order as processed
         const result = await prisma.$transaction(async (tx) => {
@@ -339,6 +270,7 @@ export const khaltiVerify = async (req, res) => {
                     status: 'PAID'
                 }
             });
+            console.log(`Updated payment ${paymentId} status to PAID`);
 
             // Generate token number
             const lastToken = await tx.token.findFirst({
@@ -354,9 +286,12 @@ export const khaltiVerify = async (req, res) => {
                     orderId: order.id
                 }
             });
+            console.log(`Created token ${token.id} with number ${token.tokenNumber}`);
 
             return { payment, token };
         });
+
+        console.log(`Successfully verified Khalti payment for order ${orderId}`);
 
         // Return receipt data
         res.json({
@@ -388,6 +323,11 @@ export const khaltiVerify = async (req, res) => {
         });
     } catch (error) {
         console.error('Error verifying Khalti payment:', error);
-        res.status(500).json({ error: 'Failed to verify Khalti payment', message: error.message });
+        console.error('Error stack:', error.stack);
+        res.status(500).json({ 
+            success: false,
+            error: 'Failed to verify Khalti payment', 
+            message: error.message 
+        });
     }
 };

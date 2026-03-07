@@ -2,7 +2,6 @@ import { prisma } from '../lib/prisma.js';
 
 export const getAdminStats = async (req, res) => {
     try {
-        // Parallelize queries for performance
         const [totalOrders, totalRevenueData, totalCustomers, pendingOrders] = await Promise.all([
             prisma.order.count(),
             prisma.order.aggregate({
@@ -10,7 +9,7 @@ export const getAdminStats = async (req, res) => {
                     totalAmt: true
                 },
                 where: {
-                    status: { not: 'CANCELLED' } // Exclude cancelled orders from revenue
+                    status: { not: 'CANCELLED' } 
                 }
             }),
             prisma.user.count({
@@ -20,7 +19,7 @@ export const getAdminStats = async (req, res) => {
             }),
             prisma.order.count({
                 where: {
-                    status: 'PROCESSING' // Assuming 'PROCESSING' counts as pending/active
+                    status: 'PROCESSING' 
                 }
             })
         ]);

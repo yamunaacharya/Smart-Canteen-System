@@ -60,7 +60,6 @@ export async function login(req, res) {
 
 export async function me(req, res) {
   try {
-    // req.user is populated by auth middleware
     const userId = req.user && req.user.id;
     if (!userId) return res.status(401).json({ message: 'Unauthorized' });
 

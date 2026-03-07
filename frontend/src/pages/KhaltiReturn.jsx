@@ -14,7 +14,8 @@ export default function KhaltiReturn() {
     const { clearCart } = useCart();
     
     const verifyingRef = useRef(false);
-    const [status, setStatus] = useState('verifying'); // 'verifying' | 'success' | 'failed'
+    const verificationAttemptedRef = useRef(false);
+    const [status, setStatus] = useState('verifying');
     const [receipt, setReceipt] = useState(null);
     const [error, setError] = useState(null);
 
@@ -27,54 +28,113 @@ export default function KhaltiReturn() {
 
     useEffect(() => {
         const verifyPayment = async () => {
-            const pidx = searchParams.get('pidx');
-            const orderId = searchParams.get('orderId');
-            const paymentId = searchParams.get('paymentId');
-
-            if (!pidx || !orderId || !paymentId) {
-                setError('Invalid payment parameters');
-                setStatus('failed');
-                return;
-            }
-
-            if (verifyingRef.current) return;
-            verifyingRef.current = true;
-
             try {
-                const response = await api.post('/payments/khalti/verify', {
-                    pidx,
-                    orderId: parseInt(orderId),
-                    paymentId: parseInt(paymentId)
-                });
+                // Get pidx from URL
+                const pidx = searchParams.get('pidx');
+                console.log('pidx from URL:', pidx);
+                
+                // Get orderId and paymentId from localStorage
+                const khaltiData = localStorage.getItem('khaltiPaymentData');
+                const parsedData = khaltiData ? JSON.parse(khaltiData) : {};
+                const orderId = parsedData.orderId;
+                const paymentId = parsedData.paymentId;
+                
+                console.log('Retrieved from localStorage:', { orderId, paymentId, timestamp: parsedData.timestamp });
+                console.log('Starting payment verification:', { pidx, orderId, paymentId });
 
-                if (response.data.success) {
-                    setReceipt(response.data.data);
-                    clearCart(); // Only clear cart after confirmed successful payment
-                    setStatus('success');
-                } else {
-                    setError(response.data.error || 'Payment verification failed');
+                if (!pidx || !orderId || !paymentId) {
+                    const missingParams = [];
+                    if (!pidx) missingParams.push('pidx');
+                    if (!orderId) missingParams.push('orderId');
+                    if (!paymentId) missingParams.push('paymentId');
+                    
+                    // Only set failed status if we haven't already attempted verification
+                    if (verificationAttemptedRef.current) {
+                        console.log('Verification already attempted, skipping retry');
+                        return;
+                    }
+                    
+                    console.error('Missing payment parameters:', missingParams);
+                    setError(`Invalid payment parameters - missing: ${missingParams.join(', ')}`);
                     setStatus('failed');
-                    // Cart remains untouched on failure - items stay for retry
+                    verificationAttemptedRef.current = true;
+                    return;
                 }
-            } catch (err) {
-                console.error('Payment verification error:', err);
-                setError(err?.response?.data?.error || 'Payment verification failed');
+
+                // If we've already attempted verification, don't try again
+                if (verificationAttemptedRef.current) {
+                    console.log('Verification already attempted, skipping retry');
+                    return;
+                }
+
+                if (verifyingRef.current) {
+                    console.log('Payment verification already in progress');
+                    return;
+                }
+                verifyingRef.current = true;
+                verificationAttemptedRef.current = true;
+
+                try {
+                    console.log('Sending verification request to backend...');
+                    console.log('Request payload:', { pidx, orderId: parseInt(orderId), paymentId: parseInt(paymentId) });
+                    
+                    const response = await api.post('/payments/khalti/verify', {
+                        pidx,
+                        orderId: parseInt(orderId),
+                        paymentId: parseInt(paymentId)
+                    });
+
+                    console.log('Full verification response:', response);
+                    console.log('Response data:', response.data);
+                    console.log('Response status:', response.status);
+
+                    if (response.data && response.data.success && response.data.data) {
+                        console.log('Payment verified successfully');
+                        setReceipt(response.data.data);
+                        clearCart(); // Only clear cart after confirmed successful payment
+                        // Clear localStorage after successful payment
+                        localStorage.removeItem('khaltiPaymentData');
+                        // Clean up URL - remove pidx from URL
+                        searchParams.delete('pidx');
+                        setSearchParams(searchParams, { replace: true });
+                        setStatus('success');
+                    } else {
+                        const errorMsg = response.data?.error || response.data?.message || 'Payment verification failed';
+                        console.error('Verification failed - response:', response.data);
+                        console.error('Error message:', errorMsg);
+                        setError(errorMsg);
+                        // Clean up URL
+                        searchParams.delete('pidx');
+                        setSearchParams(searchParams, { replace: true });
+                        setStatus('failed');
+                        // Cart remains untouched on failure - items stay for retry
+                    }
+                } catch (err) {
+                    console.error('Payment verification error:', err);
+                    console.error('Error response:', err?.response);
+                    console.error('Error response data:', err?.response?.data);
+                    const errorMsg = err?.response?.data?.error || err?.response?.data?.message || err?.message || 'Payment verification failed';
+                    console.error('Final error message:', errorMsg);
+                    setError(errorMsg);
+                    // Clean up URL
+                    searchParams.delete('pidx');
+                    setSearchParams(searchParams, { replace: true });
+                    setStatus('failed');
+                }
+            } catch (error) {
+                console.error('Unexpected error in verification:', error);
+                setError('An unexpected error occurred during payment verification');
                 setStatus('failed');
-            } finally {
-                // Clean up URL
-                searchParams.delete('pidx');
-                searchParams.delete('orderId');
-                searchParams.delete('paymentId');
-                setSearchParams(searchParams, { replace: true });
             }
         };
 
         if (!user) {
+            console.log('User not authenticated, redirecting to login');
             navigate('/login');
         } else {
             verifyPayment();
         }
-    }, [searchParams, user, navigate, clearCart, setSearchParams]);
+    }, []);
 
     return (
         <div className="min-h-screen flex flex-col">
@@ -146,12 +206,6 @@ export default function KhaltiReturn() {
 
                                 {/* Actions */}
                                 <div className="grid grid-cols-2 gap-4">
-                                    <button
-                                        onClick={() => navigate('/user/orders')}
-                                        className="px-6 py-3 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-all font-medium"
-                                    >
-                                        My Orders
-                                    </button>
                                     <button
                                         onClick={() => navigate('/menu')}
                                         className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all font-medium"
