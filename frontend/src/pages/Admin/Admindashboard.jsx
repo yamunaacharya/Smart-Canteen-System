@@ -343,5 +343,224 @@ function CustomersContent() {
 }
 
 function AnalyticsContent() {
-    return <div className="text-gray-600">Analytics</div>;
+    const [topSalesItems, setTopSalesItems] = useState([]);
+    const [mostSoldItems, setMostSoldItems] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    useEffect(() => {
+        fetchAnalyticsData();
+    }, []);
+
+    const fetchAnalyticsData = async () => {
+        try {
+            setLoading(true);
+            setError(null);
+
+            const [topSalesRes, mostSoldRes] = await Promise.all([
+                fetch('http://localhost:3000/api/stats/top-sales', {
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                }),
+                fetch('http://localhost:3000/api/stats/most-sold', {
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                })
+            ]);
+
+            if (topSalesRes.ok) {
+                const data = await topSalesRes.json();
+                setTopSalesItems(data.filter(item => item !== null));
+            }
+
+            if (mostSoldRes.ok) {
+                const data = await mostSoldRes.json();
+                setMostSoldItems(data.filter(item => item !== null));
+            }
+        } catch (err) {
+            console.error('Error fetching analytics:', err);
+            setError('Failed to load analytics data');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center py-12">
+                <div className="text-center">
+                    <div className="w-12 h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mx-auto mb-4"></div>
+                    <p className="text-gray-500 font-medium">Loading analytics...</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
+                <svg className="w-12 h-12 text-red-600 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4v.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <p className="text-red-600 font-medium">{error}</p>
+            </div>
+        );
+    }
+
+    return (
+        <div className="space-y-8">
+            {/* Top Sales Items Section */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <div className="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-indigo-50 to-blue-50">
+                    <h3 className="text-lg font-bold text-gray-900 flex items-center">
+                        <svg className="w-6 h-6 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8L5.257 19.393A2 2 0 005 18.07V5a2 2 0 012-2h8z" />
+                        </svg>
+                        Top Sales Items (by Revenue)
+                    </h3>
+                    <p className="text-sm text-gray-600 mt-1">Highest revenue generating menu items</p>
+                </div>
+
+                {topSalesItems.length === 0 ? (
+                    <div className="p-8 text-center text-gray-500">
+                        <p>No sales data available yet</p>
+                    </div>
+                ) : (
+                    <div className="overflow-x-auto">
+                        <table className="w-full">
+                            <thead className="bg-gray-50 border-b border-gray-200">
+                                <tr>
+                                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wide">Rank</th>
+                                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wide">Item Name</th>
+                                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wide">Unit Price</th>
+                                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wide">Qty Sold</th>
+                                    <th className="px-6 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wide">Total Revenue</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-200">
+                                {topSalesItems.map((item, index) => (
+                                    <tr key={item.id} className="hover:bg-gray-50 transition-colors">
+                                        <td className="px-6 py-4">
+                                            <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 font-bold text-sm">
+                                                {index + 1}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <div className="font-medium text-gray-900">{item.title}</div>
+                                        </td>
+                                        <td className="px-6 py-4 text-gray-600">Rs. {item.price}</td>
+                                        <td className="px-6 py-4">
+                                            <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-50 text-blue-700">
+                                                {item.totalQuantitySold}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4 text-right">
+                                            <span className="font-bold text-green-600">Rs. {(item.totalSalesAmount || 0).toLocaleString()}</span>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
+            </div>
+
+            {/* Most Sold Items Section */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <div className="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-purple-50 to-pink-50">
+                    <h3 className="text-lg font-bold text-gray-900 flex items-center">
+                        <svg className="w-6 h-6 mr-2 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        Most Sold Items (by Quantity)
+                    </h3>
+                    <p className="text-sm text-gray-600 mt-1">Popular items sold in highest quantities</p>
+                </div>
+
+                {mostSoldItems.length === 0 ? (
+                    <div className="p-8 text-center text-gray-500">
+                        <p>No sales data available yet</p>
+                    </div>
+                ) : (
+                    <div className="overflow-x-auto">
+                        <table className="w-full">
+                            <thead className="bg-gray-50 border-b border-gray-200">
+                                <tr>
+                                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wide">Rank</th>
+                                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wide">Item Name</th>
+                                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wide">Unit Price</th>
+                                    <th className="px-6 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wide">Quantity Sold</th>
+                                    <th className="px-6 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wide">Total Revenue</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-200">
+                                {mostSoldItems.map((item, index) => (
+                                    <tr key={item.id} className="hover:bg-gray-50 transition-colors">
+                                        <td className="px-6 py-4">
+                                            <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-purple-100 text-purple-600 font-bold text-sm">
+                                                {index + 1}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <div className="font-medium text-gray-900">{item.title}</div>
+                                        </td>
+                                        <td className="px-6 py-4 text-gray-600">Rs. {item.price}</td>
+                                        <td className="px-6 py-4 text-center">
+                                            <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-bold bg-purple-50 text-purple-700">
+                                                {item.totalQuantitySold}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4 text-right">
+                                            <span className="font-bold text-green-600">Rs. {(item.totalRevenue || 0).toLocaleString()}</span>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
+            </div>
+
+            {/* Summary Statistics */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="bg-gradient-to-br from-indigo-50 to-blue-50 rounded-xl shadow-sm border border-indigo-200 p-6">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="text-gray-600 text-sm font-medium">Total Items Tracked</p>
+                            <p className="text-3xl font-bold text-indigo-600 mt-2">{topSalesItems.length}</p>
+                        </div>
+                        <svg className="w-12 h-12 text-indigo-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                    </div>
+                </div>
+
+                <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl shadow-sm border border-green-200 p-6">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="text-gray-600 text-sm font-medium">Total Quantity Sold</p>
+                            <p className="text-3xl font-bold text-green-600 mt-2">
+                                {mostSoldItems.reduce((sum, item) => sum + (item.totalQuantitySold || 0), 0)}
+                            </p>
+                        </div>
+                        <svg className="w-12 h-12 text-green-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                        </svg>
+                    </div>
+                </div>
+
+                <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl shadow-sm border border-purple-200 p-6">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="text-gray-600 text-sm font-medium">Total Revenue (Top Items)</p>
+                            <p className="text-3xl font-bold text-purple-600 mt-2">
+                                Rs. {topSalesItems.reduce((sum, item) => sum + (item.totalSalesAmount || 0), 0).toLocaleString()}
+                            </p>
+                        </div>
+                        <svg className="w-12 h-12 text-purple-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
 }

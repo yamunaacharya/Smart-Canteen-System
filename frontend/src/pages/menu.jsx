@@ -98,7 +98,7 @@ export default function Menu() {
         <div className="min-h-screen bg-white flex flex-col">
             <Navbar />
 
-            <div className="flex-1 bg-gradient-to-br from-blue-50 via-white to-purple-50">
+            <div className="flex-1 bg-violet-50">
                 <div className="pt-24">
                     {/* Notification */}
                     {notification && (
@@ -138,8 +138,8 @@ export default function Menu() {
                                         key={category.id}
                                         onClick={() => setSelectedCategory(category.id)}
                                         className={`px-6 py-2 rounded-full font-medium whitespace-nowrap transition-all ${selectedCategory === category.id
-                                            ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
-                                            : 'bg-white text-gray-700 border border-gray-300 hover:border-blue-500'
+                                            ? 'bg-violet-600 text-white shadow-lg'
+                                            : 'bg-white text-gray-700 border border-gray-300 hover:border-violet-500'
                                             }`}
                                     >
                                         {category.icon} {category.name}
@@ -177,7 +177,7 @@ export default function Menu() {
                                                 }}
                                             />
                                             {/* Category Badge */}
-                                            <div className="absolute bottom-3 left-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-3 py-1 rounded-full text-xs font-semibold">
+                                            <div className="absolute bottom-3 left-3 bg-violet-600 text-white px-3 py-1 rounded-full text-xs font-semibold">
                                                 {item.category.charAt(0).toUpperCase() + item.category.slice(1)}
                                             </div>
                                         </div>
@@ -193,7 +193,7 @@ export default function Menu() {
 
                                             {/* Price and Add to Cart */}
                                             <div className="flex justify-between items-center">
-                                                <div className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                                                <div className="text-2xl font-bold text-violet-600">
                                                     Rs. {item.price}
                                                 </div>
                                                 {item.qty <= 0 || item.a_status === 'OUT_OF_STOCK' ? (
@@ -203,7 +203,7 @@ export default function Menu() {
                                                 ) : (
                                                     <button
                                                         onClick={() => handleAddToCart(item)}
-                                                        className="bg-gradient-to-r from-blue-600 to-purple-600 hover:shadow-lg text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-all font-medium shadow-md"
+                                                        className="bg-violet-600 hover:shadow-lg text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-all font-medium shadow-md hover:bg-violet-700"
                                                     >
                                                         <ShoppingCart size={18} />
                                                         Order Now
@@ -222,7 +222,7 @@ export default function Menu() {
                                         setSearchTerm('');
                                         setSelectedCategory('all');
                                     }}
-                                    className="mt-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2 rounded-lg hover:shadow-lg transition-all"
+                                    className="mt-4 bg-violet-600 text-white px-6 py-2 rounded-lg hover:shadow-lg transition-all hover:bg-violet-700"
                                 >
                                     Clear Filters
                                 </button>
@@ -236,7 +236,7 @@ export default function Menu() {
                                     <p className="text-lg font-semibold mb-4">Please log in to add items to cart</p>
                                     <button
                                         onClick={() => navigate('/login')}
-                                        className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2 rounded-lg hover:shadow-lg transition-all"
+                                        className="bg-violet-600 text-white px-6 py-2 rounded-lg hover:shadow-lg transition-all hover:bg-violet-700"
                                     >
                                         Go to Login
                                     </button>

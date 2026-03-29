@@ -12,12 +12,14 @@ import Cart from './pages/Cart'
 import Payment from './pages/Payment'
 import Khalti from './pages/Khalti'
 import KhaltiReturn from './pages/KhaltiReturn'
+import AboutUs from './pages/Aboutus'
 
 
 export default function AppRoutes() {
   return (
     <Routes>
       <Route path="/" element={<LandingPage />} />
+      <Route path="/about" element={<AboutUs />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/menu" element={<Menu />} />

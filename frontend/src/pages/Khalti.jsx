@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import Navbar from '../components/landing/navbar';
@@ -15,10 +15,17 @@ export default function KhaltiPayment() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [step, setStep] = useState('processing'); // 'processing' | 'success' | 'failed'
+    const initiatedRef = useRef(false);
 
     useEffect(() => {
         if (!orderId) {
             navigate('/cart');
+            return;
+        }
+
+        // Prevent double initialization in React StrictMode (development)
+        if (initiatedRef.current) {
+            console.log('Payment already initiated, skipping duplicate call');
             return;
         }
 
@@ -27,7 +34,10 @@ export default function KhaltiPayment() {
             setLoading(true);
             setError(null);
             try {
+                console.log('Initiating Khalti payment for orderId:', orderId);
                 const response = await api.post('/payments/khalti/initiate', { orderId });
+
+                console.log('Khalti initiate response:', response.data);
 
                 if (response.data.success) {
                     // Store paymentId and orderId in localStorage for retrieval on return
@@ -41,18 +51,25 @@ export default function KhaltiPayment() {
                     // Redirect to Khalti's payment page
                     window.location.href = response.data.data.paymentUrl;
                 } else {
-                    setError(response.data.error || 'Failed to initiate payment');
+                    const errorMsg = response.data.error || response.data.message || 'Failed to initiate payment';
+                    console.error('Khalti initiate failed - error:', errorMsg);
+                    console.error('Full response:', response.data);
+                    setError(errorMsg);
                     setStep('failed');
                 }
             } catch (err) {
+                const errorMsg = err?.response?.data?.error || err?.response?.data?.message || err?.message || 'Failed to initiate payment';
                 console.error('Error initiating Khalti payment:', err);
-                setError(err?.response?.data?.error || 'Failed to initiate payment');
+                console.error('Error response data:', err?.response?.data);
+                console.error('Error message:', errorMsg);
+                setError(errorMsg);
                 setStep('failed');
             } finally {
                 setLoading(false);
             }
         };
 
+        initiatedRef.current = true;
         initiatePayment();
     }, [orderId, navigate]);
 
@@ -60,12 +77,12 @@ export default function KhaltiPayment() {
         return (
             <div className="min-h-screen flex flex-col">
                 <Navbar />
-                <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50">
+                <div className="flex-1 flex items-center justify-center bg-violet-50">
                     <div className="text-center">
                         <h1 className="text-2xl font-bold text-gray-700 mb-4">No order found</h1>
                         <button
                             onClick={() => navigate('/menu')}
-                            className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:shadow-lg transition-all font-medium"
+                            className="px-6 py-3 bg-violet-600 text-white rounded-lg hover:shadow-lg transition-all font-medium hover:bg-violet-700"
                         >
                             Go to Menu
                         </button>
@@ -79,7 +96,7 @@ export default function KhaltiPayment() {
     return (
         <div className="min-h-screen flex flex-col">
             <Navbar />
-            <div className="flex-1 bg-gradient-to-br from-blue-50 via-white to-purple-50">
+            <div className="flex-1 bg-violet-50">
                 <div className="pt-24 pb-12">
                     <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
                         <button
@@ -93,7 +110,7 @@ export default function KhaltiPayment() {
                         {/* Processing */}
                         {step === 'processing' && (
                             <div className="text-center">
-                                <Loader className="w-16 h-16 animate-spin text-blue-600 mx-auto mb-6" />
+                                <Loader className="w-16 h-16 animate-spin text-violet-600 mx-auto mb-6" />
                                 <h1 className="text-3xl font-bold text-gray-800 mb-4">Processing Payment</h1>
                                 <p className="text-gray-600 mb-2">Redirecting to Khalti...</p>
                                 <p className="text-lg font-semibold text-gray-800">Rs. {total}</p>
@@ -120,7 +137,7 @@ export default function KhaltiPayment() {
                                     </button>
                                     <button
                                         onClick={() => navigate('/payment', { state: { orderId, total } })}
-                                        className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all font-medium"
+                                        className="px-6 py-3 bg-violet-600 text-white rounded-lg hover:bg-violet-700 transition-all font-medium"
                                     >
                                         Try Again
                                     </button>

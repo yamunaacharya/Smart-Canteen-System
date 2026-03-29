@@ -119,7 +119,7 @@ export default function Cart() {
         <div className="min-h-screen bg-white flex flex-col">
             <Navbar />
 
-            <div className="flex-1 bg-gradient-to-br from-blue-50 via-white to-purple-50">
+            <div className="flex-1 bg-violet-50">
                 <div className="pt-24 pb-12">
                     {/* Notification */}
                     {notification && (
@@ -154,7 +154,7 @@ export default function Cart() {
                                 <h2 className="text-2xl font-semibold text-gray-700 mb-2">Your cart is empty</h2>
                                 <button
                                     onClick={() => navigate('/menu')}
-                                    className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-lg hover:shadow-lg transition-all font-medium"
+                                    className="bg-violet-600 text-white px-6 py-3 rounded-lg hover:shadow-lg transition-all font-medium hover:bg-violet-700"
                                 >
                                     Browse Menu
                                 </button>
@@ -183,7 +183,7 @@ export default function Cart() {
                                             <div className="flex-1 ml-4">
                                                 <h3 className="font-semibold text-gray-800">{item.name}</h3>
                                                 <p className="text-sm text-gray-500">{item.category}</p>
-                                                <p className="text-lg font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                                                <p className="text-lg font-bold text-violet-600">
                                                     Rs. {item.price}
                                                 </p>
                                             </div>
@@ -235,7 +235,7 @@ export default function Cart() {
                                         <hr className="border-gray-200" />
                                         <div className="flex justify-between text-xl font-bold text-gray-800">
                                             <span>Total</span>
-                                            <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                                            <span className="text-violet-600">
                                                 Rs. {total}
                                             </span>
                                         </div>
@@ -251,7 +251,7 @@ export default function Cart() {
                                         <button
                                             onClick={handlePlaceOrder}
                                             disabled={loading}
-                                            className="flex-1 py-3 px-6 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:shadow-lg transition-all font-medium disabled:opacity-50"
+                                            className="flex-1 py-3 px-6 bg-violet-600 text-white rounded-lg hover:shadow-lg transition-all font-medium disabled:opacity-50 hover:bg-violet-700"
                                         >
                                             {loading ? 'Placing Order...' : 'Place Order'}
                                         </button>

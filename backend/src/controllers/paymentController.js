@@ -68,7 +68,12 @@ export const khaltiInitiate = async (req, res) => {
         const userId = req.user.id;
 
         if (!orderId) {
-            return res.status(400).json({ error: 'Order ID is required' });
+            console.error('Order ID is missing');
+            return res.status(400).json({ 
+                success: false,
+                error: 'Order ID is required',
+                details: 'Missing orderId in request body'
+            });
         }
 
         console.log(`Initiating Khalti payment for order ${orderId}, user ${userId}`);
@@ -88,12 +93,32 @@ export const khaltiInitiate = async (req, res) => {
         });
 
         if (!order) {
-            return res.status(404).json({ error: 'Order not found' });
+            console.error(`Order not found: ${orderId}`);
+            return res.status(404).json({ 
+                success: false,
+                error: 'Order not found',
+                details: `Order with ID ${orderId} does not exist`
+            });
         }
 
         // Verify the order belongs to this user
         if (order.customerId !== userId) {
-            return res.status(403).json({ error: 'Access denied' });
+            console.error(`User ${userId} does not own order ${orderId}. Order belongs to user ${order.customerId}`);
+            return res.status(403).json({ 
+                success: false,
+                error: 'Access denied',
+                details: 'This order does not belong to you'
+            });
+        }
+
+        // Check if KHALTI_SECRET_KEY is set
+        if (!KHALTI_SECRET_KEY) {
+            console.error('KHALTI_SECRET_KEY is not configured');
+            return res.status(500).json({ 
+                success: false,
+                error: 'Payment gateway not configured',
+                details: 'Khalti API credentials are missing'
+            });
         }
 
         // Create payment record to store khalti data
@@ -132,14 +157,42 @@ export const khaltiInitiate = async (req, res) => {
             body: JSON.stringify(khaltiPayload)
         });
 
+        console.log(`Khalti API response status: ${khaltiResponse.status}`);
+
         if (!khaltiResponse.ok) {
             const errorData = await khaltiResponse.text();
             console.error('Khalti initiate failed:', errorData);
-            return res.status(500).json({ error: 'Failed to initiate Khalti payment', details: errorData });
+            return res.status(500).json({ 
+                success: false,
+                error: 'Failed to initiate Khalti payment',
+                details: `Khalti API error (${khaltiResponse.status}): ${errorData}`,
+                khaltiStatus: khaltiResponse.status
+            });
         }
 
-        const khaltiData = await khaltiResponse.json();
+        let khaltiData;
+        try {
+            khaltiData = await khaltiResponse.json();
+        } catch (parseError) {
+            console.error('Failed to parse Khalti response:', parseError);
+            return res.status(500).json({ 
+                success: false,
+                error: 'Invalid response from Khalti API',
+                details: 'Failed to parse Khalti response'
+            });
+        }
+
         console.log('Khalti response:', khaltiData);
+
+        // Check if payment_url exists in response
+        if (!khaltiData.payment_url) {
+            console.error('Khalti response missing payment_url:', khaltiData);
+            return res.status(500).json({ 
+                success: false,
+                error: 'Invalid Khalti response',
+                details: 'Payment URL not received from Khalti'
+            });
+        }
 
         res.json({
             success: true,
@@ -152,10 +205,12 @@ export const khaltiInitiate = async (req, res) => {
         });
     } catch (error) {
         console.error('Error initiating Khalti payment:', error);
+        console.error('Error stack:', error.stack);
         res.status(500).json({ 
+            success: false,
             error: 'Failed to initiate Khalti payment', 
             message: error.message,
-            details: error.stack 
+            details: error.stack
         });
     }
 };

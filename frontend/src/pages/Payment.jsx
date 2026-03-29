@@ -30,12 +30,12 @@ export default function Payment() {
         return (
             <div className="min-h-screen flex flex-col">
                 <Navbar />
-                <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50">
+                <div className="flex-1 flex items-center justify-center bg-violet-50">
                     <div className="text-center">
                         <h1 className="text-2xl font-bold text-gray-700 mb-4">No order found</h1>
                         <button
                             onClick={() => navigate('/menu')}
-                            className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:shadow-lg transition-all font-medium"
+                            className="px-6 py-3 bg-violet-600 text-white rounded-lg hover:shadow-lg transition-all font-medium hover:bg-violet-700"
                         >
                             Go to Menu
                         </button>
@@ -49,11 +49,11 @@ export default function Payment() {
     return (
         <div className="min-h-screen flex flex-col">
             <Navbar />
-            <div className="flex-1 bg-gradient-to-br from-blue-50 via-white to-purple-50">
+            <div className="flex-1 bg-violet-50">
                 <div className="pt-24 pb-12">
                     <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
                         <div className="text-center">
-                            <Loader className="w-16 h-16 animate-spin text-blue-600 mx-auto mb-6" />
+                            <Loader className="w-16 h-16 animate-spin text-violet-600 mx-auto mb-6" />
                             <h1 className="text-3xl font-bold text-gray-800 mb-4">Processing Payment</h1>
                             <p className="text-gray-600">Redirecting to payment gateway...</p>
                             <p className="text-lg font-semibold text-gray-800 mt-4">Rs. {total}</p>

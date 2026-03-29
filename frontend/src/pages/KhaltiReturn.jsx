@@ -21,7 +21,7 @@ export default function KhaltiReturn() {
 
     const tokenStatusColors = {
         PREPARING: 'text-yellow-600',
-        READY: 'text-blue-600',
+        READY: 'text-violet-600',
         COLLECTED: 'text-green-600',
         CANCELLED: 'text-red-600'
     };
@@ -139,13 +139,12 @@ export default function KhaltiReturn() {
     return (
         <div className="min-h-screen flex flex-col">
             <Navbar />
-            <div className="flex-1 bg-gradient-to-br from-blue-50 via-white to-purple-50">
+            <div className="flex-1 bg-violet-50">
                 <div className="pt-24 pb-12">
                     <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
-                        {/* Verifying */}
                         {status === 'verifying' && (
                             <div className="text-center">
-                                <Loader className="w-16 h-16 animate-spin text-blue-600 mx-auto mb-6" />
+                                <Loader className="w-16 h-16 animate-spin text-violet-600 mx-auto mb-6" />
                                 <h1 className="text-3xl font-bold text-gray-800 mb-4">Verifying Payment</h1>
                                 <p className="text-gray-600">Please wait while we confirm your payment...</p>
                             </div>
@@ -192,11 +191,10 @@ export default function KhaltiReturn() {
                                     <div className="mb-6 pb-6 border-b border-gray-200">
                                         <div className="flex justify-between items-center">
                                             <p className="text-xl font-bold text-gray-800">Total Amount</p>
-                                            <p className="text-2xl font-bold text-blue-600">Rs. {receipt.order.totalAmt}</p>
+                                            <p className="text-2xl font-bold text-violet-600">Rs. {receipt.order.totalAmt}</p>
                                         </div>
                                     </div>
 
-                                    {/* Token */}
                                     <div className="text-center">
                                         <p className="text-sm text-gray-600 mb-2">Your Token Number</p>
                                         <p className="text-4xl font-bold text-green-600 mb-2">{receipt.token.tokenNumber}</p>
@@ -204,19 +202,17 @@ export default function KhaltiReturn() {
                                     </div>
                                 </div>
 
-                                {/* Actions */}
-                                <div className="grid grid-cols-2 gap-4">
-                                    <button
-                                        onClick={() => navigate('/menu')}
-                                        className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all font-medium"
-                                    >
-                                        Order More
-                                    </button>
+                               
+                               <div className="flex justify-center">
+                               <button
+                                 onClick={() => navigate('/menu')}
+                                 className="px-6 py-3 bg-violet-600 text-white rounded-lg hover:bg-violet-700 transition-all font-medium">
+                                 Order More
+                               </button>
+                               </div>
                                 </div>
-                            </div>
                         )}
 
-                        {/* Failed */}
                         {status === 'failed' && (
                             <div className="bg-white rounded-lg shadow-lg p-8">
                                 <div className="text-center mb-8">
@@ -236,7 +232,7 @@ export default function KhaltiReturn() {
                                     </button>
                                     <button
                                         onClick={() => navigate('/payment')}
-                                        className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all font-medium"
+                                        className="px-6 py-3 bg-violet-600 text-white rounded-lg hover:bg-violet-700 transition-all font-medium"
                                     >
                                         Try Again
                                     </button>

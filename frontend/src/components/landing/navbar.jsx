@@ -34,23 +34,23 @@ export default function Navbar() {
 
                     <Link to="/" className="flex items-center space-x-2">
                         <img src={logo} alt="Munchies & More" className="h-10 w-auto object-contain" />
-                        <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                        <span className="text-xl font-bold text-violet-600">
                             Munchies & More
                         </span>
                     </Link>
 
                     {/* Desktop Navigation */}
                     <div className="flex items-center space-x-8">
-                        <Link to="/" className="text-gray-700 hover:text-blue-600 transition-colors font-medium">
+                        <Link to="/" className="text-gray-700 hover:text-violet-600 transition-colors font-medium">
                             Home
                         </Link>
-                        <Link to="/menu" className="text-gray-700 hover:text-blue-600 transition-colors font-medium">
+                        <Link to="/menu" className="text-gray-700 hover:text-violet-600 transition-colors font-medium">
                             Menus
                         </Link>
-                        <Link to="/about" className="text-gray-700 hover:text-blue-600 transition-colors font-medium">
+                        <Link to="/about" className="text-gray-700 hover:text-violet-600 transition-colors font-medium">
                             About
                         </Link>
-                        <Link to="/contact" className="text-gray-700 hover:text-blue-600 transition-colors font-medium">
+                        <Link to="/contact" className="text-gray-700 hover:text-violet-600 transition-colors font-medium">
                             Contact
                         </Link>
                     </div>
@@ -110,7 +110,7 @@ export default function Navbar() {
                                 </Link>
                                 <Link
                                     to="/register"
-                                    className="px-6 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200 font-medium"
+                                    className="px-6 py-2 bg-violet-600 text-white rounded-lg hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200 font-medium hover:bg-violet-700"
                                 >
                                     Sign Up
                                 </Link>

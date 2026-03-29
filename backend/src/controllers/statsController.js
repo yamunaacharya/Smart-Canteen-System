@@ -77,3 +77,85 @@ export const getCustomerStats = async (req, res) => {
         res.status(500).json({ error: 'Failed to fetch customer stats' });
     }
 };
+
+export const getTopSalesItems = async (req, res) => {
+    try {
+        const topItems = await prisma.orderitem.groupBy({
+            by: ['foodId'],
+            _sum: {
+                qty: true,
+                price: true
+            },
+            orderBy: {
+                _sum: {
+                    price: 'desc'
+                }
+            },
+            take: 10
+        });
+
+        // Fetch food details for each item
+        const itemsWithDetails = await Promise.all(
+            topItems.map(async (item) => {
+                const food = await prisma.fooditem.findUnique({
+                    where: { id: item.foodId },
+                    select: { id: true, name: true, image: true, price: true }
+                });
+                return {
+                    id: food?.id,
+                    title: food?.name,
+                    image: food?.image,
+                    price: food?.price,
+                    totalSalesAmount: item._sum.price || 0,
+                    totalQuantitySold: item._sum.qty || 0
+                };
+            })
+        );
+
+        res.json(itemsWithDetails.filter(item => item.id !== undefined));
+    } catch (error) {
+        console.error('Error fetching top sales items:', error);
+        res.status(500).json({ error: 'Failed to fetch top sales items', details: error.message });
+    }
+};
+
+export const getMostSoldItems = async (req, res) => {
+    try {
+        const mostSold = await prisma.orderitem.groupBy({
+            by: ['foodId'],
+            _sum: {
+                qty: true,
+                price: true
+            },
+            orderBy: {
+                _sum: {
+                    qty: 'desc'
+                }
+            },
+            take: 10
+        });
+
+        // Fetch food details for each item
+        const itemsWithDetails = await Promise.all(
+            mostSold.map(async (item) => {
+                const food = await prisma.fooditem.findUnique({
+                    where: { id: item.foodId },
+                    select: { id: true, name: true, image: true, price: true }
+                });
+                return {
+                    id: food?.id,
+                    title: food?.name,
+                    image: food?.image,
+                    price: food?.price,
+                    totalQuantitySold: item._sum.qty || 0,
+                    totalRevenue: item._sum.price || 0
+                };
+            })
+        );
+
+        res.json(itemsWithDetails.filter(item => item.id !== undefined));
+    } catch (error) {
+        console.error('Error fetching most sold items:', error);
+        res.status(500).json({ error: 'Failed to fetch most sold items', details: error.message });
+    }
+};

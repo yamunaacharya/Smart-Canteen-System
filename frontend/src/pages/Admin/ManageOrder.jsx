@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Fragment } from 'react';
 import api from '../../services/api';
 
 export default function ManageOrder() {
@@ -135,8 +135,8 @@ export default function ManageOrder() {
                                     const canCancel = order.status === 'PROCESSING';
 
                                     return (
-                                        <>
-                                            <tr key={order.id} className={`hover:bg-gray-50 transition-colors ${isUpdating ? 'opacity-50' : ''}`}>
+                                        <Fragment key={order.id}>
+                                            <tr className={`hover:bg-gray-50 transition-colors ${isUpdating ? 'opacity-50' : ''}`}>
                                                 <td className="px-5 py-3 font-mono font-semibold text-gray-700">#{order.id}</td>
                                                 <td className="px-5 py-3">
                                                     <div className="font-medium text-gray-800">{order.user?.name || '—'}</div>
@@ -225,7 +225,7 @@ export default function ManageOrder() {
                                                             </thead>
                                                             <tbody className="divide-y divide-indigo-100">
                                                                 {order.orderitem.map((item, idx) => (
-                                                                    <tr key={idx}>
+                                                                    <tr key={`order-${order.id}-item-${item.id || idx}`}>
                                                                         <td className="py-1.5 text-gray-700 font-medium">{item.fooditem?.name || 'Item'}</td>
                                                                         <td className="py-1.5 text-center text-gray-500">{item.qty}</td>
                                                                         <td className="py-1.5 text-right text-gray-500">Rs. {item.price}</td>
@@ -243,7 +243,7 @@ export default function ManageOrder() {
                                                     </td>
                                                 </tr>
                                             )}
-                                        </>
+                                        </Fragment>
                                     );
                                 })}
                             </tbody>

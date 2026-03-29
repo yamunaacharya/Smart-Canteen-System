@@ -8,43 +8,50 @@ export default function LandingPage() {
             <Navbar />
 
             {/* Hero Section */}
-            <section className="pt-24 pb-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
-                <div className="max-w-7xl mx-auto">
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-                        <div className="space-y-8">
-                            <h4 className="text-5xl lg:text-6xl font-bold leading-tight">
-                                <span className="text-gray-900">
-                                    Delicious Meals, Delivered Fast
-                                </span>
-                            </h4>
-                            <p className="text-xl text-gray-600 leading-relaxed">
-                                Order your favorite meals, skip the queue, and enjoy a seamless dining experience.
-                                Your campus canteen, reimagined for the digital age.
-                            </p>
-                            <div className="flex flex-col sm:flex-row gap-4">
-                                <Link
-                                    to="/register"
-                                    className="px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-semibold hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-200 text-center"
-                                >
-                                    Get Started Free
-                                </Link>
-                                <a
-                                    href="#features"
-                                    className="px-8 py-4 bg-white text-gray-700 rounded-xl font-semibold border-2 border-gray-200 hover:border-blue-600 hover:text-blue-600 transition-all duration-200 text-center"
-                                >
-                                    Learn More
-                                </a>
-                            </div>
+            <section className="py-24 px-4 sm:px-6 lg:px-8 bg-white">
+                <div className="max-w-4xl mx-auto text-center">
+                    {/* Main Heading */}
+                    <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight">
+                        Order Fast,<br />
+                        <span className="text-violet-600">
+                            Eat Fresh
+                        </span>
+                    </h1>
+
+                    {/* Subtitle */}
+                    <p className="text-lg md:text-xl text-gray-600 mb-8 max-w-2xl mx-auto leading-relaxed">
+                        Skip the queue. Browse delicious meals, place your order, and pick it up when you're ready.
+                    </p>
+
+                    {/* CTA Buttons */}
+                    <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+                        <Link
+                            to="/menu"
+                            className="px-8 py-3 bg-violet-600 text-white rounded-lg font-semibold hover:shadow-lg transition-all duration-200 hover:bg-violet-700"
+                        >
+                            Browse Menu
+                        </Link>
+                        <Link
+                            to="/about"
+                            className="px-8 py-3 bg-gray-100 text-gray-700 rounded-lg font-semibold hover:bg-gray-200 transition-all duration-200"
+                        >
+                            Learn More
+                        </Link>
+                    </div>
+
+                    {/* Quick Stats */}
+                    <div className="grid grid-cols-3 gap-8 pt-8 border-t border-gray-200">
+                        <div>
+                            <div className="text-3xl font-bold text-gray-900">500+</div>
+                            <p className="text-sm text-gray-600 mt-1">Students Daily</p>
                         </div>
-                        <div className="relative hidden lg:block">
-                            <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-3xl blur-3xl opacity-20"></div>
-                            <div className="relative">
-                                <img
-                                    src="https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=600&h=600&fit=crop"
-                                    alt="Delicious food"
-                                    className="rounded-3xl shadow-2xl object-cover w-full h-[500px]"
-                                />
-                            </div>
+                        <div>
+                            <div className="text-3xl font-bold text-gray-900">30+</div>
+                            <p className="text-sm text-gray-600 mt-1">Menu Items</p>
+                        </div>
+                        <div>
+                            <div className="text-3xl font-bold text-gray-900">5 min</div>
+                            <p className="text-sm text-gray-600 mt-1">Avg Wait</p>
                         </div>
                     </div>
                 </div>
@@ -55,7 +62,7 @@ export default function LandingPage() {
                 <div className="max-w-7xl mx-auto">
                     <div className="text-center mb-16">
                         <h2 className="text-4xl font-bold text-gray-900 mb-4">
-                            Why Choose <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Munchies & More?</span>
+                            Why Choose <span className="text-violet-600">Munchies & More?</span>
                         </h2>
                         <p className="text-xl text-gray-600 max-w-2xl mx-auto">
                             Experience the perfect blend of convenience, speed, and technology
@@ -143,7 +150,7 @@ export default function LandingPage() {
             </section>
 
             {/* Stats Section */}
-            <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600">
+            <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-violet-600 via-violet-600 to-violet-700">
                 <div className="max-w-7xl mx-auto">
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-center text-white">
                         <div className="space-y-2">
@@ -169,7 +176,7 @@ export default function LandingPage() {
             <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white">
                 <div className="max-w-4xl mx-auto text-center">
                     <h2 className="text-4xl font-bold text-gray-900 mb-6">
-                        Ready to Transform Your <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Dining Experience?</span>
+                        Ready to Transform Your <span className="text-violet-600">Dining Experience?</span>
                     </h2>
                     <p className="text-xl text-gray-600 mb-8">
                         Join hundreds of students who are already enjoying hassle-free meals

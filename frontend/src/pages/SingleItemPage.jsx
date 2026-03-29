@@ -99,7 +99,7 @@ export default function SingleItemPage() {
                         <p className="text-gray-500 text-xl mb-6">{error || 'Product not found'}</p>
                         <button
                             onClick={() => navigate('/menu')}
-                            className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg font-medium hover:shadow-lg transition-all"
+                            className="px-6 py-3 bg-violet-600 text-white rounded-lg font-medium hover:shadow-lg transition-all hover:bg-violet-700"
                         >
                             Back to Menu
                         </button>
@@ -114,7 +114,7 @@ export default function SingleItemPage() {
         <div className="min-h-screen bg-white flex flex-col">
             <Navbar />
 
-            <div className="flex-1 bg-gradient-to-br from-blue-50 via-white to-purple-50 pt-24 pb-8">
+            <div className="flex-1 bg-violet-50 pt-24 pb-8">
                 {notification && (
                     <div className="fixed top-20 right-4 bg-green-500 text-white px-4 py-3 rounded-lg shadow-lg animate-pulse z-50">
                         {notification}
@@ -125,7 +125,7 @@ export default function SingleItemPage() {
 
                     <button
                         onClick={() => navigate('/menu')}
-                        className="flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium mb-8 transition-colors"
+                        className="flex items-center gap-2 text-violet-600 hover:text-violet-700 font-medium mb-8 transition-colors"
                     >
                         <ArrowLeft size={20} />
                         Back to Menu
@@ -142,7 +142,7 @@ export default function SingleItemPage() {
                                     className="w-full h-full object-cover"
                                 />
                                 
-                                <div className="absolute top-4 right-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-full font-semibold">
+                                <div className="absolute top-4 right-4 bg-violet-600 text-white px-4 py-2 rounded-full font-semibold">
                                     {item.category.charAt(0).toUpperCase() + item.category.slice(1)}
                                 </div>
                             </div>
@@ -214,7 +214,7 @@ export default function SingleItemPage() {
 
                             <button
                                 onClick={handleAddToCart}
-                                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:shadow-lg text-white px-8 py-4 rounded-lg flex items-center justify-center gap-3 transition-all font-bold text-lg shadow-md transform hover:-translate-y-0.5"
+                                className="w-full bg-violet-600 hover:shadow-lg text-white px-8 py-4 rounded-lg flex items-center justify-center gap-3 transition-all font-bold text-lg shadow-md transform hover:-translate-y-0.5 hover:bg-violet-700"
                             >
                                 <ShoppingCart size={24} />
                                 Order Now

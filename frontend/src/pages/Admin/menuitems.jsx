@@ -200,7 +200,7 @@ export default function MenuItems() {
                         resetForm();
                         setShowForm(!showForm);
                     }}
-                    className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-lg hover:shadow-lg transition-all font-medium"
+                    className="flex items-center gap-2 bg-violet-600 text-white px-6 py-3 rounded-lg hover:shadow-lg transition-all font-medium hover:bg-violet-700"
                 >
                     <Plus size={20} />
                     Add New Item
