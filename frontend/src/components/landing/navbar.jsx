@@ -50,9 +50,6 @@ export default function Navbar() {
                         <Link to="/about" className="text-gray-700 hover:text-violet-600 transition-colors font-medium">
                             About
                         </Link>
-                        <Link to="/contact" className="text-gray-700 hover:text-violet-600 transition-colors font-medium">
-                            Contact
-                        </Link>
                     </div>
 
 
